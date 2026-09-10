@@ -3407,7 +3407,7 @@ and Dashboard.
   `note_project`/`note_notebook`/`note_section`, plus a `bg_color` column on
   `note_section` reserved for a later slice) and the new
   `set_note_item_icon(kind, id, icon)` command.
-- Flatpak packaging: `packaging/flatpak/com.rubixcoder.letsgo.yml` manifest
+- Flatpak packaging: `packaging/flatpak/io.github.rubix_coder.LetsGoApp.yml` manifest
   (unpacks the Tauri `.deb` into the GNOME 47 runtime) and a `build-flatpak.sh`
   helper.
 - New `SegmentedControl` (`src/shared/SegmentedControl.tsx`): a sliding
@@ -3616,6 +3616,6 @@ and Dashboard.
 - Repository scaffold matching the master-prompt structure: pnpm workspace,
   React 18 + TypeScript + Vite frontend shell, Tauri 2.x Rust core, plugin
   directories (`plugins/corePlugins`, `plugins/userPlugins`), docs skeleton.
-- Bundle identity `com.rubixcoder.letsgo` (ADR 0001) guarded by smoke tests on
+- Bundle identity `io.github.rubix_coder.LetsGoApp` (ADR 0001) guarded by smoke tests on
   both sides: `src-tauri/tests/tauri_configuration_test.rs` and
   `src/shared/applicationVersionConsistency.test.ts`.

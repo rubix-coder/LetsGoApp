@@ -13,7 +13,7 @@
 # History: this file used to package a WebKitGTK build; that broke Google
 # sign-in and service-worker notifications, which is why the shell is Electron.
 
-id: com.rubixcoder.letsgo            # must match the metainfo <id> and .desktop name
+id: io.github.rubix_coder.LetsGoApp            # must match the metainfo <id> and .desktop name
 runtime: org.freedesktop.Platform
 runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
@@ -42,7 +42,7 @@ finish-args:
   - --filesystem=xdg-download
   - --filesystem=home
   # GNOME Software / `flatpak update` need the app to advertise its own id
-  - --own-name=com.rubixcoder.letsgo
+  - --own-name=io.github.rubix_coder.LetsGoApp
 
 modules:
   - name: zypak
@@ -65,12 +65,12 @@ modules:
       # against the Flatpak/bubblewrap sandbox instead of user namespaces.
       - install -Dm755 letsgo-launcher /app/bin/letsgo
       # Desktop entry + AppStream metadata + icons
-      - install -Dm644 com.rubixcoder.letsgo.desktop /app/share/applications/com.rubixcoder.letsgo.desktop
-      - install -Dm644 com.rubixcoder.letsgo.metainfo.xml /app/share/metainfo/com.rubixcoder.letsgo.metainfo.xml
+      - install -Dm644 io.github.rubix_coder.LetsGoApp.desktop /app/share/applications/io.github.rubix_coder.LetsGoApp.desktop
+      - install -Dm644 io.github.rubix_coder.LetsGoApp.metainfo.xml /app/share/metainfo/io.github.rubix_coder.LetsGoApp.metainfo.xml
       - |
         for px in 16 32 48 64 128 256 512; do
           install -Dm644 "icons/${px}.png" \
-            "/app/share/icons/hicolor/${px}x${px}/apps/com.rubixcoder.letsgo.png"
+            "/app/share/icons/hicolor/${px}x${px}/apps/io.github.rubix_coder.LetsGoApp.png"
         done
     sources:
       - type: dir

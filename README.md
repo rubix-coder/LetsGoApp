@@ -55,7 +55,7 @@ Then:
 git clone https://github.com/rubix-coder/LetsGoApp.git
 cd LetsGoApp
 packaging/flatpak/build-flatpak.sh      # builds, then installs --user
-flatpak run com.rubixcoder.letsgo
+flatpak run io.github.rubix_coder.LetsGoApp
 ```
 
 The script handles the dependency install itself; the first run takes a few
@@ -69,13 +69,13 @@ available, or you grabbed the `letsgo-flatpak-x86_64` artifact from a CI run:
 ```sh
 flatpak install --user flathub org.freedesktop.Platform//24.08   # once
 flatpak install --user ./letsgo.flatpak
-flatpak run com.rubixcoder.letsgo
+flatpak run io.github.rubix_coder.LetsGoApp
 ```
 
 > If you already have LetsGo installed from a signed remote, installing an
 > unsigned bundle over it fails with *"GPG verification enabled, but no
 > signatures found"*. Remove the old copy first
-> (`flatpak uninstall --user com.rubixcoder.letsgo`) — your vault in
+> (`flatpak uninstall --user io.github.rubix_coder.LetsGoApp`) — your vault in
 > `~/.var/app/` is not touched — or install from the remote instead.
 
 ### Updates
@@ -91,8 +91,8 @@ updates (`flatpak update`) need the app served from a Flatpak *repo*:
 ### Uninstall
 
 ```sh
-flatpak uninstall --user com.rubixcoder.letsgo
-rm -rf ~/.var/app/com.rubixcoder.letsgo    # also removes your vault
+flatpak uninstall --user io.github.rubix_coder.LetsGoApp
+rm -rf ~/.var/app/io.github.rubix_coder.LetsGoApp    # also removes your vault
 ```
 
 ## What it does

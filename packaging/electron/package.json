@@ -1,7 +1,7 @@
 {
   "name": "letsgo-webapp-shell",
   "private": true,
-  "version": "0.50.0",
+  "version": "0.60.1",
   "description": "LetsGo in a Chromium desktop window; /api proxied same-origin to your self-hosted LetsGo server (optional).",
   "main": "main.cjs",
   "author": "Jesal Patel (https://github.com/rubix-coder)",

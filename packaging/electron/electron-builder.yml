@@ -1,7 +1,7 @@
 # electron-builder config for the LetsGo desktop shell.
 # productName has no space on purpose: it becomes /opt/<productName>, and the
 # AppArmor profile in build/deb-afterinstall.sh attaches to that path.
-appId: com.rubixcoder.letsgo.webapp
+appId: io.github.rubix_coder.LetsGoApp.Shell
 productName: LetsGoWeb
 electronLanguages: ["en-US"]
 npmRebuild: false

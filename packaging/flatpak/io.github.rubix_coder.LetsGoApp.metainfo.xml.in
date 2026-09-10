@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Template. build-flatpak.sh substitutes @VERSION@ / @DATE@ and writes
-     com.rubixcoder.letsgo.metainfo.xml into the build staging dir. -->
+     io.github.rubix_coder.LetsGoApp.metainfo.xml into the build staging dir. -->
 <component type="desktop-application">
-  <id>com.rubixcoder.letsgo</id>
+  <id>io.github.rubix_coder.LetsGoApp</id>
   <metadata_license>MIT</metadata_license>
   <project_license>AGPL-3.0-or-later</project_license>
   <name>LetsGo</name>
@@ -32,10 +32,10 @@
     </p>
   </description>
 
-  <launchable type="desktop-id">com.rubixcoder.letsgo.desktop</launchable>
+  <launchable type="desktop-id">io.github.rubix_coder.LetsGoApp.desktop</launchable>
   <url type="homepage">https://github.com/rubix-coder/LetsGoApp</url>
   <url type="bugtracker">https://github.com/rubix-coder/LetsGoApp/issues</url>
-  <developer id="com.rubixcoder">
+  <developer id="io.github.rubix_coder">
     <name>Jesal Patel</name>
   </developer>
 

@@ -28,7 +28,7 @@ the highest-leverage single move, so everything below is about Flathub.
 - [ ] The repo is public at `https://github.com/rubix-coder/LetsGoApp`.
 - [ ] `LICENSE` is present (AGPL-3.0-or-later). Flathub requires a real license.
 - [x] **Screenshots** — five committed in `docs/screenshots/` and referenced by
-      `packaging/flatpak/com.rubixcoder.letsgo.metainfo.xml.in`. Flathub loads
+      `packaging/flatpak/io.github.rubix_coder.LetsGoApp.metainfo.xml.in`. Flathub loads
       them from `raw.githubusercontent.com`, **so those URLs only resolve once
       the repo is public.** Check them in a browser after publishing.
 - [x] **App icon** — `webapp/assets/icon-only.png` (1024x1024, violet gradient
@@ -44,7 +44,7 @@ Validate the metadata before you submit anything:
 # builds the metainfo.xml from the template, then validates it
 packaging/flatpak/build-flatpak.sh --no-install
 flatpak run org.freedesktop.appstream-glib validate \
-  packaging/flatpak/staging/com.rubixcoder.letsgo.metainfo.xml
+  packaging/flatpak/staging/io.github.rubix_coder.LetsGoApp.metainfo.xml
 ```
 
 Fix every error and every warning you reasonably can — the Flathub reviewer
@@ -56,14 +56,14 @@ runs the same check.
 
 ```bash
 packaging/flatpak/build-flatpak.sh          # builds and installs --user
-flatpak run com.rubixcoder.letsgo
+flatpak run io.github.rubix_coder.LetsGoApp
 ```
 
 Then walk `packaging/flatpak/VERIFY.md`. Two things specifically:
 
 1. **It must work with no server.** Fresh install, no config: create a task,
    write a note, run a timer. Nothing may hang waiting on a network call.
-2. **No stale config.** `rm -rf ~/.var/app/com.rubixcoder.letsgo` first, so you
+2. **No stale config.** `rm -rf ~/.var/app/io.github.rubix_coder.LetsGoApp` first, so you
    are testing what a new user gets, not your own leftover state.
 
 CI builds the same bundle: **Actions → Flatpak → Run workflow**, then download
@@ -76,8 +76,8 @@ the `letsgo-flatpak-x86_64` artifact.
 Flathub builds from a **manifest in their repo**, not from yours.
 
 1. Fork [`flathub/flathub`](https://github.com/flathub/flathub) and create a
-   branch named exactly `com.rubixcoder.letsgo`.
-2. Add the manifest (`com.rubixcoder.letsgo.yml` or `.json`) at the repo root
+   branch named exactly `io.github.rubix_coder.LetsGoApp`.
+2. Add the manifest (`io.github.rubix_coder.LetsGoApp.yml` or `.json`) at the repo root
    of that branch. Base it on `packaging/flatpak/` but point `sources` at a
    **tagged git URL**, not a local path:
 
@@ -98,7 +98,7 @@ Flathub builds from a **manifest in their repo**, not from yours.
    offline**, so every dependency must be a declared source. Electron apps in
    particular need `node_modules` vendored or declared, not `npm install`-ed
    during the build.
-5. On merge you get `flathub/com.rubixcoder.letsgo` — your own repo. Push there
+5. On merge you get `flathub/io.github.rubix_coder.LetsGoApp` — your own repo. Push there
    to ship an update; the build farm publishes it.
 
 Turnaround is typically days to a couple of weeks for a first submission.
@@ -109,7 +109,7 @@ Turnaround is typically days to a couple of weeks for a first submission.
 - **`--share=network`** will be questioned. LetsGo needs it for optional
   WebDAV/Google sync — say so in the PR description.
 - **App ID must match** the `id` in the metainfo, the `.desktop` file name, and
-  the icon file name. All three are already `com.rubixcoder.letsgo`.
+  the icon file name. All three are already `io.github.rubix_coder.LetsGoApp`.
 
 ---
 
@@ -156,7 +156,7 @@ repo signed with a different key makes every existing client fail verification.
 - [ ] `CHANGELOG.md` entry written.
 - [ ] `pnpm test` and `pnpm test:shell` pass.
 - [ ] Flatpak built and smoke-tested from a clean state
-      (`rm -rf ~/.var/app/com.rubixcoder.letsgo` first).
+      (`rm -rf ~/.var/app/io.github.rubix_coder.LetsGoApp` first).
 - [ ] Tag pushed (`v0.60.1`).
 - [ ] Release created with `letsgo.flatpak` attached.
 - [ ] Flathub manifest bumped to the new tag + commit sha.

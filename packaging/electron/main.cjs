@@ -21,7 +21,7 @@ const { createFlatpakUpdater } = require("./flatpakUpdate.cjs");
 //
 // The name differs per package, and it must match the .desktop FILENAME:
 // the deb ships letsgo-webapp.desktop, the Flatpak ships
-// com.rubixcoder.letsgo.desktop. FLATPAK_ID is set by the runtime inside the
+// io.github.rubix_coder.LetsGoApp.desktop. FLATPAK_ID is set by the runtime inside the
 // sandbox, so it doubles as both the detector and the correct value.
 app.commandLine.appendSwitch(
   "wayland-app-id",

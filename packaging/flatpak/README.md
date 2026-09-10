@@ -14,10 +14,10 @@ service-worker notifications. That is why the shell is Electron.
 
 | File | Role |
 |------|------|
-| `com.rubixcoder.letsgo.yml` | Flatpak manifest — consumes `electron-builder --linux dir`, layers it on `org.electronjs.Electron2.BaseApp//24.08` |
+| `io.github.rubix_coder.LetsGoApp.yml` | Flatpak manifest — consumes `electron-builder --linux dir`, layers it on `org.electronjs.Electron2.BaseApp//24.08` |
 | `letsgo-launcher` | `/app/bin/letsgo` — hands the Electron binary to `zypak-wrapper` so Chromium's sandbox works inside bubblewrap |
-| `com.rubixcoder.letsgo.desktop` | desktop entry |
-| `com.rubixcoder.letsgo.metainfo.xml.in` | AppStream metadata template (`@VERSION@`/`@DATE@` filled at build time) |
+| `io.github.rubix_coder.LetsGoApp.desktop` | desktop entry |
+| `io.github.rubix_coder.LetsGoApp.metainfo.xml.in` | AppStream metadata template (`@VERSION@`/`@DATE@` filled at build time) |
 | `make-icons.mjs` | resizes `webapp/assets/icon-only.png` into the hicolor sizes (uses `sharp` from `webapp/node_modules`) |
 | `build-flatpak.sh` | the whole pipeline → a signed OSTree repo in `repo/` |
 | `VERIFY.md` | post-build checklist (notifications, sounds, reminders, themes, OTA…) |
@@ -37,7 +37,7 @@ Then:
 ```sh
 # dev build, installed into --user, unsigned repo
 packaging/flatpak/build-flatpak.sh
-flatpak run com.rubixcoder.letsgo
+flatpak run io.github.rubix_coder.LetsGoApp
 
 # release build: sign the repo so the OTA remote is trustworthy
 LETSGO_GPG_KEY=<your-key-id> packaging/flatpak/build-flatpak.sh --no-install
@@ -61,7 +61,7 @@ With a repo, a machine installs once:
 ```sh
 flatpak remote-add --user letsgo \
   https://letsgo.example.com/flatpak/letsgo.flatpakrepo
-flatpak install --user letsgo com.rubixcoder.letsgo
+flatpak install --user letsgo io.github.rubix_coder.LetsGoApp
 ```
 
 and updates with `flatpak update` (or GNOME Software's automatic daily check).
@@ -213,7 +213,7 @@ Then pass the key id as `LETSGO_GPG_KEY`. Notes that matter:
 The vault lives in the Flatpak's per-app data, not shared with a browser tab:
 
 ```
-~/.var/app/com.rubixcoder.letsgo/config/…    (Chromium profile, origin http://localhost:8637)
+~/.var/app/io.github.rubix_coder.LetsGoApp/config/…    (Chromium profile, origin http://localhost:8637)
 ```
 
 Migrate from a browser via **Settings → Data → Export / Import**.

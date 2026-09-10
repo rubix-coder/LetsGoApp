@@ -11,14 +11,14 @@
 #   6. flatpak build-update-repo                       -> deltas + summary for `flatpak update`
 #
 # By default this installs the result into your --user installation, so
-# `flatpak run com.rubixcoder.letsgo` works straight after.
+# `flatpak run io.github.rubix_coder.LetsGoApp` works straight after.
 #
 # It also leaves an OSTree repo in packaging/flatpak/repo. You only need that
 # if you intend to HOST updates yourself — serve it over HTTPS and set
 # LETSGO_REPO_ORIGIN so a letsgo.flatpakrepo descriptor is written too.
 # Otherwise ignore it, or export a single file to hand around:
 #   flatpak build-bundle packaging/flatpak/repo letsgo.flatpak \
-#     com.rubixcoder.letsgo master
+#     io.github.rubix_coder.LetsGoApp master
 #
 # Usage:
 #   packaging/flatpak/build-flatpak.sh [--skip-build] [--no-install]
@@ -42,8 +42,8 @@ SHELL_DIR="$APP_ROOT/packaging/electron"
 STAGING="$SCRIPT_DIR/staging"
 BUILD_DIR="$SCRIPT_DIR/build"
 REPO_DIR="${LETSGO_REPO_DIR:-$SCRIPT_DIR/repo}"
-MANIFEST="$SCRIPT_DIR/com.rubixcoder.letsgo.yml"
-APP_ID="com.rubixcoder.letsgo"
+MANIFEST="$SCRIPT_DIR/io.github.rubix_coder.LetsGoApp.yml"
+APP_ID="io.github.rubix_coder.LetsGoApp"
 
 SKIP_BUILD=0
 INSTALL=1

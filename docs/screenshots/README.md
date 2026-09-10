@@ -1,7 +1,7 @@
 # Screenshots
 
 These are the store-listing images referenced by
-`packaging/flatpak/com.rubixcoder.letsgo.metainfo.xml.in`. Flathub will not
+`packaging/flatpak/io.github.rubix_coder.LetsGoApp.metainfo.xml.in`. Flathub will not
 accept the app without at least one, and it loads them over HTTPS from
 `raw.githubusercontent.com`, so they must stay committed at these paths.
 

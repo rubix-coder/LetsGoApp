@@ -12,7 +12,7 @@
    key, which the persistMirror makes durable app data.
 
    Setup this needs (see webapp/ANDROID.md): an Android-type OAuth client for
-   package com.rubixcoder.letsgo + signing SHA-1, its client id entered in
+   package io.github.rubix_coder.LetsGoApp + signing SHA-1, its client id entered in
    Settings → Google Calendar, and the reverse-client-ID scheme filled into
    `googleOauthScheme` in android/app/build.gradle. */
 
@@ -34,7 +34,7 @@ const AUTH_TIMEOUT_MS = 5 * 60_000;
     id falls back to the package scheme (also in the manifest). */
 export function redirectUriFor(clientId: string): string {
   const m = /^(.+)\.apps\.googleusercontent\.com$/.exec(clientId.trim());
-  const scheme = m ? `com.googleusercontent.apps.${m[1]}` : "com.rubixcoder.letsgo";
+  const scheme = m ? `com.googleusercontent.apps.${m[1]}` : "io.github.rubix_coder.LetsGoApp";
   return `${scheme}:/oauth2redirect`;
 }
 

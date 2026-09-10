@@ -1,7 +1,7 @@
 # LetsGo Flatpak — verification checklist
 
 Run after `packaging/flatpak/build-flatpak.sh` installs the build
-(`flatpak run com.rubixcoder.letsgo`). The Flatpak is the LetsGo **webapp**
+(`flatpak run io.github.rubix_coder.LetsGoApp`). The Flatpak is the LetsGo **webapp**
 rendered by Chromium, so this list is "does the browser feature survive the
 sandbox", not "is the feature implemented".
 
@@ -25,7 +25,7 @@ the paragraph above as the record for 0.48.0.
 
 ```sh
 LETSGO_SMOKE_SHOT=/tmp/letsgo.png \
-  flatpak run --command=letsgo-webapp com.rubixcoder.letsgo
+  flatpak run --command=letsgo-webapp io.github.rubix_coder.LetsGoApp
 # -> writes /tmp/letsgo.png of the rendered app, exits 0, prints SMOKE_OK
 ```
 
@@ -36,9 +36,9 @@ LETSGO_SMOKE_SHOT=/tmp/letsgo.png \
 
 | # | Check | How | Pass |
 |---|-------|-----|------|
-| 0 | **Local-only, clean state** | `rm -rf ~/.var/app/com.rubixcoder.letsgo` first. With **no server configured and the network off**, create a task, write a note, run a timer — nothing hangs or errors. This is the core promise; test it before anything else. | ☐ |
+| 0 | **Local-only, clean state** | `rm -rf ~/.var/app/io.github.rubix_coder.LetsGoApp` first. With **no server configured and the network off**, create a task, write a note, run a timer — nothing hangs or errors. This is the core promise; test it before anything else. | ☐ |
 | 1 | **First paint / vault** | Launch → Unlock screen or dashboard renders | ☐ |
-| 2 | **Vault persistence** | Add a task, quit, relaunch → task still there (profile at `~/.var/app/com.rubixcoder.letsgo/config/…`) | ☐ |
+| 2 | **Vault persistence** | Add a task, quit, relaunch → task still there (profile at `~/.var/app/io.github.rubix_coder.LetsGoApp/config/…`) | ☐ |
 | 3 | **Color scheme** | Settings → toggle light/dark and accent → chrome + cards recolor, no flash of wrong theme on next launch | ☐ |
 | 4 | **Notifications** | Settings grant prompt → allow; start a 1-min timer → OS banner fires at 0:00 | ☐ |
 | 5 | **Backgrounded reminder** | Start a short timer, minimize the window → banner still fires (service worker) | ☐ |
@@ -54,12 +54,12 @@ LETSGO_SMOKE_SHOT=/tmp/letsgo.png \
 
 ```sh
 # after publishing a newer build to your Flatpak repo:
-flatpak update com.rubixcoder.letsgo      # pulls the delta, no reinstall
+flatpak update io.github.rubix_coder.LetsGoApp      # pulls the delta, no reinstall
 # or: GNOME Software shows it under Updates within ~a day
 ```
 
 | # | Check | Pass |
 |---|-------|------|
 | 13 | `flatpak remote-add --user letsgo https://<nas>/flatpak/letsgo.flatpakrepo` succeeds (GPG key trusted) | ☐ |
-| 14 | `flatpak install --user letsgo com.rubixcoder.letsgo` from a clean machine works | ☐ |
+| 14 | `flatpak install --user letsgo io.github.rubix_coder.LetsGoApp` from a clean machine works | ☐ |
 | 15 | Bump webapp version, rebuild+publish → `flatpak update` moves the client to the new version, vault intact | ☐ |
