@@ -23,6 +23,14 @@ Sync is opt-in and *you* own the other end of it:
   entered in Settings. No shared credentials ship in this repo.
 - **Team mode** — an optional Node backend in `server/` that you host yourself.
 
+[Youtube Video](https://youtu.be/IFJvAI1x5Ro?si=rE2HrsirfC0HIDua)
+
+<img width="1547" height="784" alt="timer" src="https://github.com/user-attachments/assets/02b0604a-65d7-4136-a363-27c21dfb04f5" />
+<img width="1547" height="784" alt="schedule" src="https://github.com/user-attachments/assets/7d50b790-a7df-4c30-9eb0-8e8cdac44ee9" />
+<img width="1547" height="784" alt="mindmap-dark" src="https://github.com/user-attachments/assets/7e6fb7ec-80d1-4e13-976c-0902ee540e27" />
+<img width="1547" height="784" alt="dashboard" src="https://github.com/user-attachments/assets/e6966605-77c4-47f3-9bf0-53cbce43779d" />
+<img width="1547" height="784" alt="board" src="https://github.com/user-attachments/assets/7737d2ee-4e51-4706-9f89-8cb4985ad66d" />
+
 The Library is the one feature that reaches a third party when you *use* it:
 looking up a book queries Open Library (then Google Books), and resolving an
 awkward book link can call the Anthropic API with a key you supply. Both are
