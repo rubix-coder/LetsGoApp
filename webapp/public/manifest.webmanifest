@@ -1,0 +1,12 @@
+{
+  "name": "LetsGo",
+  "short_name": "LetsGo",
+  "description": "The plugin planner — todo board, schedule, calendar, timers, notes, mindmap.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f3f3f6",
+  "theme_color": "#7c5cf4",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

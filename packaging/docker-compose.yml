@@ -1,0 +1,45 @@
+# LetsGo team deployment. Run from the repo root:
+#   docker compose -f packaging/docker-compose.yml up -d
+#
+# `api` is the backend (accounts, roles, per-project doc sync) on a persistent
+# SQLite volume. `web` serves the built webapp (webapp/dist — build it first
+# with `pnpm --filter letsgo-webapp build`, or point the volume at the
+# directory your CI deploy publishes) and proxies /api to the api on ONE
+# origin, so the session cookie stays first-party.
+#
+# Serving over plain HTTP (LAN/Tailscale IP)? Drop NODE_ENV=production from
+# `api` — production sets the Secure cookie flag and the browser will refuse
+# the session cookie without HTTPS, making login appear to silently fail.
+
+services:
+  api:
+    build:
+      context: ../server
+    restart: unless-stopped
+    environment:
+      # CHANGE THIS: any long random string; sessions are keyed server-side but
+      # this guards future signed artifacts.
+      SESSION_SECRET: "change-me"
+      DB_PATH: /data/letsgo.db
+      PORT: "8787"
+      # Set true only while bootstrapping / for open self-host sign-up. The very
+      # first account is always allowed so an admin can bootstrap.
+      ALLOW_SIGNUP: "false"
+      NODE_ENV: production
+    volumes:
+      - letsgo-data:/data
+    ports:
+      - "8787:8787"
+
+  web:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on: [api]
+    volumes:
+      - ../webapp/dist:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro # SPA fallback + /api -> api:8787
+    ports:
+      - "8080:80"
+
+volumes:
+  letsgo-data:

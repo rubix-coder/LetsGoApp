@@ -1,0 +1,35 @@
+# Shared JS toolchain setup: pnpm + Node (with a pnpm store cache) and a frozen
+# install. Used by every lane so the five workflows stop copy-pasting the same
+# three steps. Node 24 runtime via pnpm/action-setup@v5 + setup-node@v5.
+name: Set up pnpm, Node and dependencies
+description: Install pnpm and Node with a cached pnpm store, then run a frozen install.
+
+inputs:
+  node-version:
+    description: Node.js version.
+    default: "22"
+  pnpm-version:
+    description: pnpm major version.
+    default: "9"
+  install:
+    description: Run `pnpm install --frozen-lockfile` after the toolchain is set up.
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up pnpm
+      uses: pnpm/action-setup@v5
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    - name: Set up Node
+      uses: actions/setup-node@v5
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+
+    - name: Install dependencies
+      if: inputs.install == 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile

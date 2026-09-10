@@ -1,0 +1,38 @@
+# CI for the LetsGo webapp + server.
+#
+# One lane: typecheck, unit tests, production build. The Flatpak itself is
+# built by flatpak.yml — run that when you want an installable artifact.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-app
+
+      - name: Unit tests (webapp + server)
+        run: pnpm test
+
+      - name: Production build
+        run: pnpm build
+
+      # These serve webapp/dist, so they run after the build.
+      - name: Desktop shell smoke tests
+        run: pnpm --filter letsgo-webapp-shell test

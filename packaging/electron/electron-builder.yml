@@ -1,0 +1,45 @@
+# electron-builder config for the LetsGo desktop shell.
+# productName has no space on purpose: it becomes /opt/<productName>, and the
+# AppArmor profile in build/deb-afterinstall.sh attaches to that path.
+appId: com.rubixcoder.letsgo.webapp
+productName: LetsGoWeb
+electronLanguages: ["en-US"]
+npmRebuild: false
+files:
+  - main.cjs
+  - server.cjs
+  - flatpakUpdate.cjs
+  - package.json
+  - build/icon.png
+extraResources:
+  - from: ../../webapp/dist
+    to: webapp
+  # Spawned by python3 from the runtime, so it must stay a real file on disk
+  # rather than an entry inside app.asar.
+  - from: flatpak-update-agent.py
+    to: flatpak-update-agent.py
+directories:
+  output: dist
+  buildResources: build
+linux:
+  target: [deb]
+  artifactName: letsgo-webapp_${version}_${arch}.${ext}
+  executableName: letsgo-webapp
+  icon: build/icon.png
+  category: Office
+  syncDesktopName: true
+  synopsis: Local-first planner (LetsGo web app as a desktop app)
+  description: >-
+    LetsGo planner: kanban/eisenhower/gantt/list todos, day schedule, month
+    calendar, markdown notes, mindmap, timers, dashboard and a book library.
+    Data is encrypted client-side; an optional self-hosted team backend is
+    reached via a bundled same-origin proxy.
+  desktop:
+    entry:
+      Name: LetsGo (Web)
+      Keywords: todo;tasks;planner;kanban;schedule;notes;library;
+deb:
+  # Upgrades cleanly over the 0.35.0 python-launcher package of the same name.
+  packageName: letsgo-webapp
+  afterInstall: build/deb-afterinstall.sh
+  afterRemove: build/deb-afterremove.sh

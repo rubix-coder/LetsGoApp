@@ -1,0 +1,14 @@
+packages:
+  - "webapp"
+  - "server"
+  - "packaging/electron"
+
+# Explicit decisions about which dependencies may run install scripts.
+# The `false` entries matter as much as the `true` ones: without them pnpm
+# aborts the install with ERR_PNPM_IGNORED_BUILDS instead of skipping them.
+allowBuilds:
+  electron: true
+  esbuild: true
+  sharp: true
+  # electron-builder pulls this in for Windows targets we never build.
+  electron-winstaller: false

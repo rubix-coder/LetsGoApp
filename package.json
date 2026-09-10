@@ -1,0 +1,24 @@
+{
+  "name": "letsgo",
+  "private": true,
+  "version": "0.60.1",
+  "type": "module",
+  "description": "LetsGo \u2014 local-first planner, packaged as a Linux Flatpak.",
+  "scripts": {
+    "dev": "pnpm --filter letsgo-webapp dev",
+    "build": "pnpm --filter letsgo-webapp build",
+    "test": "pnpm --filter letsgo-webapp test && pnpm --filter letsgo-server test",
+    "test:shell": "pnpm build && pnpm --filter letsgo-webapp-shell test",
+    "flatpak": "packaging/flatpak/build-flatpak.sh"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  },
+  "license": "AGPL-3.0-or-later",
+  "homepage": "https://github.com/rubix-coder/LetsGoApp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rubix-coder/LetsGoApp.git"
+  }
+}

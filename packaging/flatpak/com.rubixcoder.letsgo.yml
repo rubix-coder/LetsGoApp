@@ -1,0 +1,77 @@
+# Flatpak manifest for LetsGo (the webapp, as a desktop app).
+#
+# Strategy: the LetsGo app rendered by Chromium via the Electron shell in
+# packaging/electron/.
+# Chromium (not WebKitGTK) is the whole point: service-worker timer
+# notifications, Web-Audio alert sounds, WebCrypto, camera barcode scanning and
+# Google sign-in all behave exactly as in the browser the webapp is built
+# against. This manifest consumes the electron-builder `--linux dir` output and
+# drops it into the /app prefix on top of the Electron base app (which provides
+# the zypak sandbox shim the Flatpak sandbox needs for Chromium).
+#
+# Build + install + run:  packaging/flatpak/build-flatpak.sh
+# History: this file used to package a WebKitGTK build; that broke Google
+# sign-in and service-worker notifications, which is why the shell is Electron.
+
+id: com.rubixcoder.letsgo            # must match the metainfo <id> and .desktop name
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: '24.08'
+command: letsgo
+separate-locales: false
+
+finish-args:
+  # Display
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  # Alert sounds (Web Audio API) need a sound server
+  - --socket=pulseaudio
+  # Timer / reminder / status-nudge banners
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+  # Camera — ISBN barcode scanning in the book library
+  - --device=all
+  # Outbound network: the bundled localhost server reverse-proxies /api and
+  # /webdav to your self-hosted team backend, and Google Calendar sync talks to Google
+  - --share=network
+  # Vault export / import writes a file the user picks
+  - --filesystem=xdg-download
+  - --filesystem=home
+  # GNOME Software / `flatpak update` need the app to advertise its own id
+  - --own-name=com.rubixcoder.letsgo
+
+modules:
+  - name: zypak
+    # Provided by the Electron base app; re-declared as a no-op anchor so the
+    # manifest reads top-to-bottom. (The base app already installs it.)
+    buildsystem: simple
+    build-commands:
+      - 'true'
+
+  - name: letsgo
+    buildsystem: simple
+    build-commands:
+      # The electron-builder `--linux dir` tree, staged by build-flatpak.sh.
+      - mkdir -p /app/letsgo
+      - cp -a linux-unpacked/. /app/letsgo/
+      # chrome-sandbox is unusable inside the Flatpak sandbox — zypak replaces
+      # it. Strip the SUID bit so it can't even be attempted.
+      - chmod 0755 /app/letsgo/chrome-sandbox || true
+      # Launcher: hand the real binary to zypak so Chromium's sandbox works
+      # against the Flatpak/bubblewrap sandbox instead of user namespaces.
+      - install -Dm755 letsgo-launcher /app/bin/letsgo
+      # Desktop entry + AppStream metadata + icons
+      - install -Dm644 com.rubixcoder.letsgo.desktop /app/share/applications/com.rubixcoder.letsgo.desktop
+      - install -Dm644 com.rubixcoder.letsgo.metainfo.xml /app/share/metainfo/com.rubixcoder.letsgo.metainfo.xml
+      - |
+        for px in 16 32 48 64 128 256 512; do
+          install -Dm644 "icons/${px}.png" \
+            "/app/share/icons/hicolor/${px}x${px}/apps/com.rubixcoder.letsgo.png"
+        done
+    sources:
+      - type: dir
+        path: staging

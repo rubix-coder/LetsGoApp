@@ -1,0 +1,2037 @@
+/* LetsGo — "Modern" soft-surface design language. THIS FILE IS THE SOURCE OF
+   TRUTH for the palette and type; read it before writing UI code.
+   Violet accent on a soft neutral-gray ground, near-white surfaces,
+   Instrument Sans for the interface, JetBrains Mono for numerics. Only the
+   palette + type were remapped here; the component structure (blueprint
+   frames, registration marks) is unchanged. Dark theme is "midnight indigo":
+   its own blue-violet-tinted ground ladder with a lifted, more luminous
+   accent — not light mode inverted. */
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("/fonts/InstrumentSans.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono.woff2") format("woff2");
+  font-weight: 500 700;
+  font-display: swap;
+}
+
+:root {
+  /* Ground sits a touch deeper than before so a white card actually reads as
+     raised rather than as more page. */
+  --color-bg: #eeeef3;
+  --color-surface: #ffffff;
+  --color-card: #ffffff;
+  --color-text: #17171f;
+  /* 58% resolved to 4.39:1 on white — just under the 4.5 AA floor */
+  --color-text-2: color-mix(in srgb, #17171f 66%, transparent);
+  /* 42% resolved to 2.67:1, well under it. Placeholders and meta were the
+     worst offenders in light mode. 54% is 3.8:1 — a large improvement while
+     staying clearly de-emphasised against body text. */
+  --color-text-3: color-mix(in srgb, #17171f 54%, transparent);
+  --color-divider: color-mix(in srgb, #17171f 18%, transparent);
+  --color-divider-soft: color-mix(in srgb, #17171f 11%, transparent);
+  --color-corner: color-mix(in srgb, #17171f 45%, transparent);
+
+  --color-accent: #7c5cf4;
+  --on-accent: #ffffff;
+
+  /* Bookmark ribbon — a deep library red, kept clear of --st-skipped's rose
+     so a bookmark never reads as a did-not-finish marker. */
+  --bookmark: #a3282a;
+  --bookmark-edge: #7d1d1f;
+  --on-bookmark: #fdf3f2;
+  --accent-strong: #5b3fd6;   /* emphasis text */
+  --accent-deep: #4a30bd;     /* deepest accent */
+  --accent-soft: #efeafe;     /* filled soft blocks */
+  --accent-mid: #cfc2f9;      /* soft block borders */
+  --accent-wash: color-mix(in srgb, #7c5cf4 12%, transparent); /* active nav */
+
+  --st-pending: #eea23c;
+  --st-progress: #7c5cf4;
+  --st-paused: #5b7a99;
+  --st-done: #22a06b;
+  --st-skipped: #ec5f77;
+  --prio-hi-border: #ec5f77;
+  --prio-hi-text: #c72c49;
+
+  /* Sync-health tint for the logo badge (Google + NAS). */
+  --sync-busy: #1a9e5f;
+  --sync-warn: #e08a1e;
+  --sync-bad: var(--prio-hi-text);
+
+  --grid-line: color-mix(in srgb, #17171f 3%, transparent);
+  --dot-line: color-mix(in srgb, #17171f 8%, transparent);
+  /* Drawing-pad paper patterns (grid/lines rules, dot grid, checkerboard tint). */
+  --paper-line: color-mix(in srgb, #17171f 10%, transparent);
+  --paper-dot: color-mix(in srgb, #17171f 22%, transparent);
+  --paper-tint: color-mix(in srgb, #17171f 4%, transparent);
+  --dim: color-mix(in srgb, #17171f 34%, transparent); /* modal backdrop */
+
+  --radius: 10px;             /* Modern rounded controls */
+  --radius-card: 14px;        /* Modern rounded frames/cards */
+  --radius-sm: 6px;           /* small chips, menu rows, inline buttons */
+
+  /* "Now" line in the schedule — a pure red, deliberately clear of
+     --st-skipped's rose and --prio-hi-text's crimson so the current-time
+     marker can never be misread as a status or priority hue. */
+  --now-line: #e5484d;
+
+  /* Accent gradient (icon badges, progress bars) + per-status column wells. */
+  --accent-grad-a: #8b6cf7;
+  --accent-grad-b: #6b4ce0;
+  --accent-gradient: linear-gradient(135deg, var(--accent-grad-a), var(--accent-grad-b));
+  --accent-gradient-h: linear-gradient(90deg, var(--accent-grad-a), var(--accent-grad-b));
+  --well-pending: color-mix(in srgb, var(--st-pending) 10%, var(--color-bg));
+  --well-progress: color-mix(in srgb, var(--st-progress) 10%, var(--color-bg));
+  --well-done: color-mix(in srgb, var(--st-done) 10%, var(--color-bg));
+  --well-skipped: color-mix(in srgb, var(--st-skipped) 10%, var(--color-bg));
+
+  /* The "juice" layer (from the Modern mock): violet glow shadows, button
+     hover accent, neutral segmented track, filled priority chips, colored
+     column headers/count chips, radial glow washes. */
+  --accent-hover: #6b4ce0;
+  --glow-btn: 0 4px 12px -2px rgba(124, 92, 244, 0.45);
+  --glow-badge: 0 8px 20px -8px rgba(124, 92, 244, 0.6);
+  --glow-card: 0 4px 14px -6px rgba(124, 92, 244, 0.35);
+  --glow-fab: 0 12px 28px -8px rgba(124, 92, 244, 0.65);
+  --pulse-ring: rgba(124, 92, 244, 0.45);
+  --seg-track: #ededf1;
+  --seg-active-bg: #ffffff;
+  --prio-bg: #f0f0f4;      --prio-fg: #71717c;
+  --prio0-bg: #fde9ed;     --prio0-fg: #c72c49;
+  --prio1-bg: #fdf1e0;     --prio1-fg: #b06a10;
+  --head-progress: #4a30bd;
+  --head-done: #1a8557;
+  --head-skipped: #c72c49;
+  --count-neutral: #e3e3e9;
+  --count-progress: #ded5fb;
+  --count-done: #d4ecdf;
+  --count-skipped: #f4dbe1;
+  --glow-wash: radial-gradient(720px 420px at 50% 8%, rgba(124, 92, 244, 0.10), transparent 65%);
+
+  /* ————— Habit heat ramp —————
+     Sequential, ONE hue, light→dark: the only correct colour job for "how much
+     of the target did this day get" (a magnitude on a grid). Built with
+     color-mix off --color-accent so it follows whichever accent is chosen, and
+     so Thermal and E-ink — which collapse the accent onto their single ink —
+     get a legible grey/ink ramp for free instead of a colour that isn't there.
+
+     The steps are not eyeballed. They were run through the dataviz validator
+     (ordinal mode) against the card surface: monotone lightness, every adjacent
+     gap ΔL >= 0.06, and the LIGHT END clears 2:1 contrast against the surface —
+     the last of which is why the ramp starts at 55% and not at a faint wash. A
+     "barely started" day has to be visible or the grid lies about it.
+     Validated for the default violet; the other accents follow the same
+     construction. --heat-0 is the empty track and is deliberately NOT a ramp
+     step: "nothing recorded" is absence, not the smallest magnitude. */
+  --heat-0: color-mix(in srgb, var(--color-text) 9%, var(--color-card));
+  --heat-1: color-mix(in srgb, var(--color-accent) 55%, var(--color-card));
+  --heat-2: color-mix(in srgb, var(--color-accent) 78%, var(--color-card));
+  --heat-3: var(--color-accent);
+  --heat-4: color-mix(in srgb, var(--color-accent) 72%, var(--color-text));
+
+  --font-heading: "Instrument Sans", system-ui, sans-serif;
+  --font-body: "Instrument Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --shadow-sm: 0 1px 2px rgba(23, 23, 31, 0.05);
+  --shadow-md: 0 4px 14px -4px rgba(23, 23, 31, 0.14);
+  --shadow-lg: 0 24px 48px -20px rgba(23, 23, 31, 0.22);
+}
+
+[data-theme="dark"] {
+  /* "Midnight indigo" — dark mode is its own palette, not light-mode with the
+     values flipped. The neutral-gray ladder this replaces read as one bland
+     sheet; every step here carries a deliberate blue-violet cast (hue ~230)
+     so the ground feels like night-mode chrome, and the accent family gains
+     a step of luminance + chroma to glow against it. The three-step
+     bg → surface → card ladder stays (each ~1.1:1 above the last — enough to
+     separate, not enough to look stripey), as do the AA floors: text-2 7.3:1
+     and text-3 5.6:1 on a card; dividers visibly tinted, never invisible. */
+  --color-bg: #0b0d16;
+  --color-surface: #131625;
+  --color-card: #1b1f33;
+  --color-text: #f2f3fa;
+  --color-text-2: #a8adc4;
+  --color-text-3: #9298b0;
+  --color-divider: #363c56;
+  --color-divider-soft: #2a2f45;
+  --color-corner: #4a5070;
+
+  --color-accent: #a78bfa;
+  --on-accent: #171226;
+
+  --bookmark: #cb4a44;
+  --bookmark-edge: #94302b;
+  --on-bookmark: #fff1ef;
+  --accent-strong: #c4b0fc;
+  --accent-deep: #c4b0fc;
+  --accent-soft: color-mix(in srgb, #a78bfa 20%, var(--color-bg));
+  --accent-mid: #57497f;
+  --accent-wash: color-mix(in srgb, #a78bfa 18%, transparent);
+
+  --accent-grad-a: #b9a2fd;
+  --accent-grad-b: #7c5cf4;
+
+  --accent-hover: #b9a2fd;
+  --glow-btn: 0 6px 18px -4px rgba(167, 139, 250, 0.55);
+  --glow-badge: 0 8px 22px -8px rgba(167, 139, 250, 0.6);
+  --glow-card: 0 4px 16px -6px rgba(167, 139, 250, 0.4);
+  --glow-fab: 0 12px 30px -8px rgba(167, 139, 250, 0.6);
+  --pulse-ring: rgba(167, 139, 250, 0.5);
+  --seg-track: #0e111d;
+  --seg-active-bg: #272c45;
+  --prio-bg: #262b40;                          --prio-fg: #a8adc4;
+  --prio0-bg: rgba(240, 112, 139, 0.18);       --prio0-fg: #f5849a;
+  --prio1-bg: rgba(246, 185, 93, 0.18);        --prio1-fg: #f6b95d;
+  --head-progress: #c4b0fc;
+  --head-done: #57dd9f;
+  --head-skipped: #f5849a;
+  --count-neutral: #262b40;
+  --count-progress: rgba(167, 139, 250, 0.25);
+  --count-done: rgba(77, 214, 149, 0.22);
+  --count-skipped: rgba(240, 112, 139, 0.22);
+  /* Two washes instead of one: the violet halo up top plus a faint deep-blue
+     bloom rising from the bottom corner — the "night sky" depth cue that keeps
+     hero/auth surfaces from reading as a flat slab. */
+  --glow-wash:
+    radial-gradient(720px 420px at 50% 8%, rgba(167, 139, 250, 0.16), transparent 65%),
+    radial-gradient(900px 520px at 85% 110%, rgba(76, 103, 255, 0.10), transparent 60%);
+
+  --st-pending: #f6b95d;
+  --st-progress: #a78bfa;
+  --st-paused: #8aa9c6;
+  --st-done: #4dd695;
+  --st-skipped: #f0708b;
+  --now-line: #ff5d63;
+  --paper-line: color-mix(in srgb, #dfe3ff 14%, transparent);
+  --paper-dot: color-mix(in srgb, #dfe3ff 27%, transparent);
+  --paper-tint: color-mix(in srgb, #dfe3ff 6%, transparent);
+  --prio-hi-border: #f0708b;
+  --prio-hi-text: #f5849a;
+  --sync-busy: #3fb87e;
+  --sync-warn: #f0a94a;
+  --sync-bad: var(--prio-hi-text);
+
+  /* Technical grounds pick up the indigo cast too — pure-white lines on a
+     tinted ground were the tell that dark mode was an afterthought. */
+  --grid-line: rgba(167, 175, 255, 0.05);
+  --dot-line: rgba(167, 175, 255, 0.13);
+  --dim: rgba(5, 6, 14, 0.66);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.55);
+  --shadow-md: 0 6px 18px -4px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 28px 60px -18px rgba(0, 0, 0, 0.72);
+}
+
+/* ————— Accent choices (Settings → Appearance) —————
+   Violet is the default (`:root` above — no block needed). Each accent
+   re-states the full accent family so the default stays byte-identical:
+   light accents sit at 600/700 depth (AA on the white --on-accent), dark
+   accents at 300 tints (readable under the dark #17141f --on-accent). The
+   glow/wash layer derives from --accent-rgb inside each block. */
+
+[data-accent="blue"] {
+  --color-accent: #3e63dd;  --accent-rgb: 62, 99, 221;
+  --accent-strong: #3151b8; --accent-deep: #27419c;
+  --accent-soft: #e9eefc;   --accent-mid: #c4d0f6;
+  --accent-wash: rgba(var(--accent-rgb), 0.12);
+  --st-progress: var(--color-accent);
+  --accent-grad-a: #5d7ce8; --accent-grad-b: #3454c4; --accent-hover: #3454c4;
+  --head-progress: var(--accent-deep); --count-progress: #d6def8;
+  --glow-btn: 0 4px 12px -2px rgba(var(--accent-rgb), 0.45);
+  --glow-badge: 0 8px 20px -8px rgba(var(--accent-rgb), 0.6);
+  --glow-card: 0 4px 14px -6px rgba(var(--accent-rgb), 0.35);
+  --glow-fab: 0 12px 28px -8px rgba(var(--accent-rgb), 0.65);
+  --pulse-ring: rgba(var(--accent-rgb), 0.45);
+  --glow-wash: radial-gradient(720px 420px at 50% 8%, rgba(var(--accent-rgb), 0.10), transparent 65%);
+}
+[data-theme="dark"][data-accent="blue"] {
+  --color-accent: #8ea6f4;  --accent-rgb: 142, 166, 244;
+  --accent-strong: #aabcf7; --accent-deep: #aabcf7;
+  --accent-soft: color-mix(in srgb, var(--color-accent) 20%, var(--color-bg));
+  --accent-mid: #43538c;
+  --accent-wash: rgba(var(--accent-rgb), 0.18);
+  --accent-grad-a: #9db2f6; --accent-grad-b: #6d8bef; --accent-hover: #aabcf7;
+  --head-progress: var(--accent-strong); --count-progress: rgba(var(--accent-rgb), 0.22);
+}
+
+[data-accent="teal"] {
+  --color-accent: #0e8276;  --accent-rgb: 14, 130, 118;
+  --accent-strong: #0b6a60; --accent-deep: #095850;
+  --accent-soft: #e3f3f1;   --accent-mid: #b2ddd7;
+  --accent-wash: rgba(var(--accent-rgb), 0.12);
+  --st-progress: var(--color-accent);
+  --accent-grad-a: #2f998c; --accent-grad-b: #0a6c61; --accent-hover: #0b6a60;
+  --head-progress: var(--accent-deep); --count-progress: #d0e9e5;
+  --glow-btn: 0 4px 12px -2px rgba(var(--accent-rgb), 0.45);
+  --glow-badge: 0 8px 20px -8px rgba(var(--accent-rgb), 0.6);
+  --glow-card: 0 4px 14px -6px rgba(var(--accent-rgb), 0.35);
+  --glow-fab: 0 12px 28px -8px rgba(var(--accent-rgb), 0.65);
+  --pulse-ring: rgba(var(--accent-rgb), 0.45);
+  --glow-wash: radial-gradient(720px 420px at 50% 8%, rgba(var(--accent-rgb), 0.10), transparent 65%);
+}
+[data-theme="dark"][data-accent="teal"] {
+  --color-accent: #6cccc0;  --accent-rgb: 108, 204, 192;
+  --accent-strong: #8cd8ce; --accent-deep: #8cd8ce;
+  --accent-soft: color-mix(in srgb, var(--color-accent) 20%, var(--color-bg));
+  --accent-mid: #316660;
+  --accent-wash: rgba(var(--accent-rgb), 0.18);
+  --accent-grad-a: #7dd2c7; --accent-grad-b: #47b3a5; --accent-hover: #8cd8ce;
+  --head-progress: var(--accent-strong); --count-progress: rgba(var(--accent-rgb), 0.22);
+}
+
+[data-accent="ember"] {
+  --color-accent: #c05621;  --accent-rgb: 192, 86, 33;
+  --accent-strong: #9e4519; --accent-deep: #833a12;
+  --accent-soft: #fcece2;   --accent-mid: #f3c9ae;
+  --accent-wash: rgba(var(--accent-rgb), 0.12);
+  --st-progress: var(--color-accent);
+  --accent-grad-a: #d4703a; --accent-grad-b: #b04b18; --accent-hover: #9e4519;
+  --head-progress: var(--accent-deep); --count-progress: #f6ddcb;
+  --glow-btn: 0 4px 12px -2px rgba(var(--accent-rgb), 0.45);
+  --glow-badge: 0 8px 20px -8px rgba(var(--accent-rgb), 0.6);
+  --glow-card: 0 4px 14px -6px rgba(var(--accent-rgb), 0.35);
+  --glow-fab: 0 12px 28px -8px rgba(var(--accent-rgb), 0.65);
+  --pulse-ring: rgba(var(--accent-rgb), 0.45);
+  --glow-wash: radial-gradient(720px 420px at 50% 8%, rgba(var(--accent-rgb), 0.10), transparent 65%);
+}
+[data-theme="dark"][data-accent="ember"] {
+  --color-accent: #ff9d6b;  --accent-rgb: 255, 157, 107;
+  --accent-strong: #ffb389; --accent-deep: #ffb389;
+  --accent-soft: color-mix(in srgb, var(--color-accent) 20%, var(--color-bg));
+  --accent-mid: #7a4e33;
+  --accent-wash: rgba(var(--accent-rgb), 0.18);
+  --accent-grad-a: #ffa87b; --accent-grad-b: #f27c44; --accent-hover: #ffb389;
+  --head-progress: var(--accent-strong); --count-progress: rgba(var(--accent-rgb), 0.22);
+}
+
+[data-accent="rose"] {
+  --color-accent: #b23d64;  --accent-rgb: 178, 61, 100;
+  --accent-strong: #94324f; --accent-deep: #7a2942;
+  --accent-soft: #fae9ef;   --accent-mid: #f0c1d2;
+  --accent-wash: rgba(var(--accent-rgb), 0.12);
+  --st-progress: var(--color-accent);
+  --accent-grad-a: #c25a7f; --accent-grad-b: #a03457; --accent-hover: #94324f;
+  --head-progress: var(--accent-deep); --count-progress: #f3d6e0;
+  --glow-btn: 0 4px 12px -2px rgba(var(--accent-rgb), 0.45);
+  --glow-badge: 0 8px 20px -8px rgba(var(--accent-rgb), 0.6);
+  --glow-card: 0 4px 14px -6px rgba(var(--accent-rgb), 0.35);
+  --glow-fab: 0 12px 28px -8px rgba(var(--accent-rgb), 0.65);
+  --pulse-ring: rgba(var(--accent-rgb), 0.45);
+  --glow-wash: radial-gradient(720px 420px at 50% 8%, rgba(var(--accent-rgb), 0.10), transparent 65%);
+}
+[data-theme="dark"][data-accent="rose"] {
+  --color-accent: #ef94b4;  --accent-rgb: 239, 148, 180;
+  --accent-strong: #f4acc5; --accent-deep: #f4acc5;
+  --accent-soft: color-mix(in srgb, var(--color-accent) 20%, var(--color-bg));
+  --accent-mid: #713c52;
+  --accent-wash: rgba(var(--accent-rgb), 0.18);
+  --accent-grad-a: #f19fbc; --accent-grad-b: #e26f97; --accent-hover: #f4acc5;
+  --head-progress: var(--accent-strong); --count-progress: rgba(var(--accent-rgb), 0.22);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+#root { height: 100%; }
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+p { margin: 0; }
+button { font: inherit; }
+a { color: var(--color-accent); text-underline-offset: 3px; }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+
+/* — brand — */
+.wm {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: var(--color-text);
+}
+.wm .cv { color: var(--color-accent); margin-left: 4px; }
+.cap {
+  font: 600 10px/1 var(--font-heading);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-2);
+}
+
+/* — card frame (registration-mark corners removed for the Modern look) — */
+.blueprint { position: relative; border: 1px solid var(--color-divider); border-radius: var(--radius-card); }
+/* Task cards opt into a soft hover-lift (Modern mock). Not applied to the base
+   frame so modals/panels stay put. */
+.blueprint.lift { transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease; }
+.blueprint.lift:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: color-mix(in srgb, var(--color-text) 12%, transparent); }
+@media (prefers-reduced-motion: reduce) { .blueprint.lift { transition: none; } .blueprint.lift:hover { transform: none; } }
+.blueprint > .corner {
+  display: none;
+  position: absolute; width: 11px; height: 11px;
+  color: var(--color-corner); pointer-events: none;
+}
+.blueprint > .corner::before, .blueprint > .corner::after {
+  content: ""; position: absolute; background: currentColor;
+}
+.blueprint > .corner::before { left: 5px; top: 0; width: 1px; height: 100%; }
+.blueprint > .corner::after { top: 5px; left: 0; width: 100%; height: 1px; }
+.blueprint > .corner.tl { top: -6px; left: -6px; }
+.blueprint > .corner.tr { top: -6px; right: -6px; }
+.blueprint > .corner.bl { bottom: -6px; left: -6px; }
+.blueprint > .corner.br { bottom: -6px; right: -6px; }
+
+/* — schedule lineage bookmark: parent-ancestry tag that drops in from the
+     card's top edge on hover. Hidden at rest (the leaf shows only its own
+     title); on hover the card content slides down to make room and a readable
+     horizontal tag reveals above it — never overlapping the title. Parent
+     container blocks are hidden from the grid; this is how a leaf shows its
+     lineage. — */
+.lineageBody { transition: padding-top 160ms ease; }
+.lineageHost:hover .lineageBody { padding-top: 18px; }
+.lineageTag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: 100%;
+  height: 16px;
+  line-height: 16px;
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--on-accent);
+  background: var(--accent-deep);
+  border-radius: 0 0 6px 6px;
+  transform: translateY(-100%);
+  transition: transform 160ms ease;
+  pointer-events: none;
+  z-index: 2;
+}
+.lineageHost:hover > .lineageTag { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .lineageBody, .lineageTag { transition: none; }
+}
+
+/* — technical grounds — */
+.gridbg {
+  background:
+    linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0/32px 32px,
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0/32px 32px;
+}
+.dotbg { background: radial-gradient(circle, var(--dot-line) 1px, transparent 1px) 0 0/28px 28px; }
+
+/* — buttons — */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  cursor: pointer; text-decoration: none;
+  font-family: var(--font-heading); font-weight: 600;
+  font-size: 14px; line-height: 1.2; color: var(--color-text);
+  background: transparent; border: 1px solid var(--color-divider);
+  padding: 7px 12px; border-radius: var(--radius);
+}
+.btn svg { display: block; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary {
+  background: var(--color-accent); border-color: var(--color-accent); color: var(--on-accent);
+  box-shadow: 0 1px 2px rgba(23, 23, 31, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: background 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--glow-btn); }
+.btn-secondary:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.btn-secondary:active, .btn-primary:active { transform: translateY(1px); }
+@media (prefers-reduced-motion: reduce) { .btn-primary { transition: none; } .btn-primary:hover { transform: none; } }
+.btn-ghost { border-color: transparent; color: var(--color-accent-70, var(--accent-strong)); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.btn-icon { width: 34px; height: 34px; padding: 0; }
+.btn-block { width: 100%; }
+
+/* — segmented control (Modern mock: neutral inset track, white active pill
+     with a small shadow — violet stays reserved for primary CTAs) — */
+.seg { display: inline-flex; background: var(--seg-track); border-radius: var(--radius); padding: 3px; gap: 2px; }
+.seg-opt {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; font-size: 13px; cursor: pointer;
+  background: transparent; border: none; color: var(--color-text-2);
+  font-family: var(--font-body); border-radius: calc(var(--radius) - 3px);
+  transition: background 120ms ease, color 120ms ease;
+}
+.seg-opt.active { background: var(--seg-active-bg); color: var(--color-text); font-weight: 600; box-shadow: 0 1px 2px rgba(23, 23, 31, 0.08); }
+.seg-opt:not(.active):hover { background: color-mix(in srgb, var(--color-text) 6%, transparent); color: var(--color-text); }
+.seg-sm .seg-opt { padding: 4px 9px; font-size: 12px; }
+/* Ink variant (the mock's view-filter row): bare pills, solid-ink active. */
+.seg-ink { background: transparent; padding: 0; gap: 6px; }
+.seg-ink .seg-opt { border-radius: 999px; padding: 5px 12px; }
+.seg-ink .seg-opt.active { background: var(--color-text); color: var(--color-bg); box-shadow: none; }
+
+/* — filter chips (mindmap graph lenses) — */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; font-size: 12px; line-height: 1.3; cursor: pointer;
+  background: var(--color-bg); color: var(--color-text-2);
+  border: 1px solid var(--color-divider); border-radius: 999px;
+  font-family: var(--font-body);
+}
+.chip:hover { background: color-mix(in srgb, var(--color-accent) 8%, transparent); color: var(--color-text); }
+.chip.on { background: var(--accent-soft); border-color: var(--accent-mid); color: var(--accent-strong); font-weight: 600; }
+
+/* — mindmap graph canvas — */
+.graphcanvas .graphnode { transition: opacity 120ms ease; }
+@media (prefers-reduced-motion: reduce) { .graphcanvas .graphnode { transition: none; } }
+
+/* — tags — */
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 11px;
+  letter-spacing: 0.02em; padding: 2px 8px; white-space: nowrap;
+  border-radius: 999px;
+}
+.tag-accent { background: var(--accent-soft); color: var(--accent-deep); }
+.tag-neutral { background: color-mix(in srgb, var(--color-text) 7%, transparent); color: var(--color-text); }
+.tag-outline { border: 1px solid var(--color-accent); color: var(--color-accent); padding: 1px 7px; }
+
+/* — priority chip (Modern mock: filled tinted chips — P0 rose, P1 amber,
+     P2/P3 neutral — bold mono, no border) — */
+.prio {
+  font: 700 10px var(--font-mono); padding: 3px 6px; white-space: nowrap;
+  background: var(--prio-bg); color: var(--prio-fg);
+  border-radius: 5px;
+}
+.prio.p0 { background: var(--prio0-bg); color: var(--prio0-fg); }
+.prio.p1 { background: var(--prio1-bg); color: var(--prio1-fg); }
+/* legacy class kept for anything still emitting .hi */
+.prio.hi { background: var(--prio0-bg); color: var(--prio0-fg); }
+
+/* — forms — */
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field > label {
+  font-size: 12px; color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+.input {
+  width: 100%; min-height: 36px; padding: 6px 10px; font: inherit;
+  font-size: 14px; color: var(--color-text); caret-color: var(--color-accent);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider); border-radius: var(--radius);
+}
+.input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+textarea.input { min-height: 60px; resize: vertical; line-height: 1.5; }
+
+/* — toggle switch (the one rounded exception, per the mock) — */
+.toggle {
+  width: 44px; height: 24px; border-radius: 12px; position: relative; flex: none;
+  background: var(--color-divider); border: none; cursor: pointer; padding: 0;
+}
+.toggle .knob {
+  position: absolute; top: 2px; left: 2px; width: 20px; height: 20px;
+  background: var(--color-bg); border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent);
+  transition: left 150ms ease;
+}
+.toggle.on { background: var(--color-accent); }
+.toggle.on .knob { left: 22px; border: none; }
+
+/* — table — */
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th {
+  text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  padding: 7px; border-bottom: 1px solid var(--color-divider);
+  font-family: var(--font-body);
+}
+.table td { padding: 7px; border-bottom: 1px solid var(--color-divider-soft); }
+.table tbody tr:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+/* Row-reorder grip: quiet until the row is hovered or focused within. */
+.list-grip { opacity: 0; transition: opacity 90ms; }
+.table tbody tr:hover .list-grip, .table tbody tr:focus-within .list-grip { opacity: 1; }
+
+/* — resizable list columns —
+   Fixed layout so <col> widths are authoritative; every cell clips instead of
+   forcing the column back open when its content is wider than the user's drag. */
+.table-resizable { table-layout: fixed; }
+.table-resizable th, .table-resizable td { overflow: hidden; text-overflow: ellipsis; }
+.table-resizable th { position: relative; }
+
+/* The dragger sits on the column's trailing edge: a wide invisible hit area
+   (comfortable to grab) around a hairline that only shows on hover/drag. */
+.col-resizer {
+  position: absolute; top: 0; right: -4px; width: 9px; height: 100%;
+  cursor: col-resize; touch-action: none; background: none; border: none; padding: 0;
+  display: flex; justify-content: center; z-index: 2;
+}
+.col-resizer::after {
+  content: ""; width: 2px; height: 60%; align-self: center; border-radius: 1px;
+  background: var(--color-divider); opacity: 0; transition: opacity 120ms ease, background 120ms ease;
+}
+.col-resizer:hover::after, .col-resizer.dragging::after { opacity: 1; background: var(--color-accent); }
+.col-resizer:focus-visible::after { opacity: 1; background: var(--color-accent); }
+
+/* Status cell doubles as the status control — click cycles it. */
+.status-cycle {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 11px; white-space: nowrap;
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  background: none; color: inherit; padding: 3px 7px; cursor: pointer; font-family: inherit;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.status-cycle:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); border-color: var(--color-divider); }
+.status-cycle:disabled { cursor: default; opacity: 0.55; }
+.status-cycle:disabled:hover { background: none; border-color: transparent; }
+
+/* Inline quick note in the list — reads as text until you touch it. */
+.cell-input {
+  width: 100%; border: 1px solid transparent; background: none; padding: 2px 4px;
+  font: inherit; font-size: 12.5px; color: var(--color-text); border-radius: 4px;
+}
+.cell-input::placeholder { color: var(--color-text-3); }
+.cell-input:hover { border-color: var(--color-divider); }
+.cell-input:focus { border-color: var(--color-accent); outline: none; }
+
+/* — status dot (round, per the Modern mock) — */
+.stsq { width: 9px; height: 9px; flex: none; display: inline-block; border-radius: 50%; }
+
+/* In-progress dots breathe: the mock's lgPulse ring. */
+@keyframes lgPulse {
+  0% { box-shadow: 0 0 0 0 var(--pulse-ring); }
+  70% { box-shadow: 0 0 0 9px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.stsq.pulse { animation: lgPulse 2.4s infinite; }
+
+/* Paused: a slate dot split by a thin gap, reading as the "❚❚" pause glyph
+   without needing a real icon. Never pulses — the point is that it's on hold. */
+.stsq.paused {
+  animation: none;
+  background: linear-gradient(90deg, var(--st-paused) 0 38%, transparent 38% 62%, var(--st-paused) 62% 100%);
+  border-radius: 2px;
+}
+
+/* Board / schedule card that's paused: slate spine + faint slate wash, and
+   none of the in-progress violet glow. */
+.card-paused {
+  box-shadow: inset 3px 0 0 var(--st-paused) !important;
+  background: color-mix(in srgb, var(--st-paused) 9%, var(--color-card)) !important;
+  border-color: color-mix(in srgb, var(--st-paused) 45%, transparent) !important;
+}
+
+/* — gradient logo badge (the mock's ▸▸ tile: violet gradient, soft glow) — */
+.logoBadge {
+  display: inline-grid; place-items: center; flex: none;
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--accent-gradient); color: #fff;
+  font: 700 11px var(--font-mono); letter-spacing: -1px;
+  box-shadow: var(--glow-badge);
+  user-select: none;
+}
+.logoBadge.lg { width: 48px; height: 48px; border-radius: 13px; font-size: 17px; }
+
+/* — sync-health tint (see .wm-btn / SyncLogo): the badge carries the app's
+     Google + NAS sync state so it is legible without opening Settings — */
+.logoBadge[data-tone="syncing"] { background: var(--sync-busy); animation: lgBadgePulse 1.5s ease-in-out infinite; }
+.logoBadge[data-tone="attention"] { background: var(--sync-warn); }
+.logoBadge[data-tone="error"] { background: var(--sync-bad); }
+@keyframes lgBadgePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+[data-reduce-motion="true"] .logoBadge[data-tone="syncing"] { animation: none; }
+
+/* The wordmark as a button when it doubles as the sync control: strip the
+   chrome, keep the type, and give it a real focus ring. */
+.wm-btn {
+  background: none; border: none; padding: 0; margin: 0;
+  font: inherit; letter-spacing: inherit; color: inherit; cursor: pointer;
+}
+.wm-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
+
+/* — radial violet wash for hero/auth surfaces — */
+.glowTop { background: var(--glow-wash), var(--color-bg); }
+.hatch {
+  background:
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--color-text) 4%, transparent) 0 6px, transparent 6px 12px),
+    var(--color-card);
+}
+
+/* — nav rows (sidebar / settings nav) — */
+.navrow {
+  display: flex; align-items: center; gap: 11px; padding: 9px 16px;
+  border: none; background: none; border-radius: var(--radius);
+  color: color-mix(in srgb, var(--color-text) 68%, transparent);
+  text-decoration: none; font-size: 14px; cursor: pointer; text-align: left;
+  font-family: var(--font-body); width: 100%;
+}
+.navrow:hover { color: var(--color-text); background: color-mix(in srgb, var(--color-text) 5%, transparent); }
+.navrow.active {
+  background: var(--accent-soft);
+  color: var(--accent-strong); font-weight: 600;
+}
+.railbtn {
+  width: 38px; height: 38px; display: grid; place-items: center;
+  border: none; background: none; cursor: pointer;
+  color: var(--color-text-2); border-radius: var(--radius);
+}
+.railbtn.active { background: var(--accent-soft); color: var(--accent-strong); }
+
+/* — mobile bottom tabs + FAB — */
+.tabbar {
+  display: flex; border-top: 1px solid var(--color-divider);
+  padding: 6px 6px calc(8px + env(safe-area-inset-bottom));
+  background: var(--color-bg);
+}
+.tabbar button {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  border: none; background: none; cursor: pointer;
+  color: var(--color-text-2); font-size: 9.5px; font-family: var(--font-body); padding: 4px 0;
+}
+.tabbar button.active { color: var(--accent-strong); font-weight: 600; }
+.fab {
+  position: fixed; right: 16px; bottom: calc(74px + env(safe-area-inset-bottom));
+  width: 52px; height: 52px; padding: 0; z-index: 30;
+  background: var(--accent-gradient); border: none; border-radius: 16px;
+  box-shadow: var(--glow-fab);
+}
+.fab:hover { background: var(--accent-gradient); transform: translateY(-1px); box-shadow: var(--glow-fab); }
+
+/* — task editor: collapsible sections — */
+.te-section { border: 1px solid var(--color-divider); border-radius: var(--radius); overflow: hidden; }
+.te-sechead {
+  width: 100%; display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px; background: none; border: none; cursor: pointer; text-align: left; color: var(--color-text);
+}
+.te-sechead:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+.te-secchevron { display: flex; color: var(--color-text-3); transition: transform 120ms ease; }
+.te-secchevron[data-open="true"] { transform: rotate(90deg); }
+.te-sectitle { font: 600 12px/1.2 var(--font-heading); letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-2); }
+.te-secsummary { margin-left: auto; font-size: 12px; color: var(--color-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 58%; }
+.te-secbody { padding: 2px 12px 14px; display: flex; flex-direction: column; gap: 12px; }
+@media (prefers-reduced-motion: reduce) { .te-secchevron { transition: none; } }
+
+/* — gantt view — */
+.gv-scroll { flex: 1; min-height: 0; overflow: auto; }
+.gv-head {
+  position: sticky; top: 0; z-index: 3; display: flex; height: 46px;
+  background: var(--color-bg); border-bottom: 1px solid var(--color-divider);
+}
+.gv-corner {
+  position: sticky; left: 0; z-index: 4; flex-shrink: 0; display: flex; align-items: flex-end;
+  padding: 0 12px 5px; background: var(--color-bg); border-right: 1px solid var(--color-divider);
+}
+/* The date header doubles as the horizontal scrollbar: drag it to travel
+   through time. `pan-y` hands us the horizontal gesture while leaving vertical
+   scrolling to the browser, and `user-select: none` stops a drag turning into
+   a text selection of the date labels. */
+.gv-headtrack {
+  position: relative; flex: 1; overflow: hidden;
+  cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+}
+.gv-headtrack.panning { cursor: grabbing; }
+.gv-band {
+  position: absolute; top: 5px; height: 15px; display: flex; gap: 6px; align-items: baseline;
+  padding-left: 7px; border-left: 1px solid var(--color-divider); overflow: hidden; white-space: nowrap;
+}
+.gv-band b { font: 600 11px var(--font-heading); color: var(--color-text); }
+.gv-band span { font-size: 10px; color: var(--color-text-3); }
+.gv-tick {
+  position: absolute; bottom: 4px; transform: translateX(-50%);
+  font-size: 11px; color: var(--color-text-2); font-variant-numeric: tabular-nums;
+  min-width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+}
+.gv-tick.wknd { color: var(--color-text-3); }
+.gv-tick.today { background: var(--color-accent); color: var(--on-accent); font-weight: 600; }
+.gv-grow { display: flex; height: 36px; border-bottom: 1px solid var(--color-divider-soft); }
+.gv-gdot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+.gv-gname {
+  font: 600 11px/1.2 var(--font-heading); letter-spacing: 0.05em; text-transform: uppercase;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.gv-gcount { font-size: 11px; color: var(--color-text-3); }
+.gv-gline { position: absolute; top: 23px; height: 3px; border-radius: 2px; }
+.gv-glabel { position: absolute; top: 5px; font-size: 10.5px; color: var(--color-text-2); white-space: nowrap; }
+.gv-glabel b { color: var(--color-text); font-weight: 600; }
+.gv-row { display: flex; height: 40px; border-bottom: 1px solid var(--color-divider-soft); }
+.gv-row:hover .gv-track, .gv-grow:hover .gv-track { background: color-mix(in srgb, var(--color-text) 3%, transparent); }
+.gv-row:hover .gv-cell, .gv-grow:hover .gv-cell { background: color-mix(in srgb, var(--color-text) 3%, var(--color-bg)); }
+.gv-cell {
+  position: sticky; left: 0; z-index: 2; flex-shrink: 0; display: flex; align-items: center; gap: 8px;
+  padding: 0 12px; background: var(--color-bg); border-right: 1px solid var(--color-divider); min-width: 0;
+}
+.gv-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.gv-title.sub { color: var(--color-text-2); font-size: 12.5px; }
+.gv-dates { width: 84px; flex-shrink: 0; font-size: 11px; color: var(--color-text-2); white-space: nowrap; font-variant-numeric: tabular-nums; text-align: right; }
+.gv-track { position: relative; flex: 1; overflow: hidden; }
+.gv-bar {
+  position: absolute; top: 11px; height: 18px; border-radius: 5px; border: none; padding: 0; cursor: pointer;
+  transition: filter 120ms ease;
+}
+.gv-bar:hover { filter: brightness(1.08); }
+.gv-bar:focus-visible, .gv-ms:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.gv-progress { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px 0 0 5px; background: rgba(0, 0, 0, 0.18); pointer-events: none; }
+.gv-barlabel {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  font-size: 11.5px; color: var(--color-text-2); white-space: nowrap; pointer-events: none;
+}
+.gv-ms {
+  position: absolute; top: 13px; width: 13px; height: 13px; transform: rotate(45deg);
+  border-radius: 3px; background: var(--color-bg); cursor: pointer; padding: 0;
+}
+.gv-grid { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--color-divider-soft); pointer-events: none; }
+.gv-grid.major { border-left-color: var(--color-divider); }
+.gv-wknd { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--color-text) 3%, transparent); pointer-events: none; }
+.gv-today { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px solid var(--color-accent); pointer-events: none; }
+.gv-today::before {
+  content: ""; position: absolute; top: -2px; left: -4.25px; width: 7px; height: 7px;
+  border-radius: 50%; background: var(--color-accent);
+}
+.gv-connectors { position: absolute; pointer-events: none; }
+/* Dependency lines: the visible path ignores the pointer, a fat invisible
+   twin catches clicks for removal. */
+.gv-deps { position: absolute; pointer-events: none; }
+.gv-deps .hit { pointer-events: stroke; cursor: pointer; }
+/* Link-creation dots at bar ends — revealed on row hover (Horizon gesture). */
+.gv-dot {
+  position: absolute; top: 50%; width: 9px; height: 9px; margin-top: -4.5px;
+  border-radius: 50%; background: var(--color-bg); border: 1.5px solid var(--color-accent);
+  opacity: 0; cursor: crosshair; z-index: 3; touch-action: none;
+}
+.gv-row:hover .gv-dot { opacity: 1; }
+/* Edge-resize zones inside a bar. */
+.gv-handle { position: absolute; top: 0; bottom: 0; width: 7px; cursor: ew-resize; touch-action: none; }
+.gv-chev { border: none; background: none; cursor: pointer; padding: 0; display: flex; color: var(--accent-strong); flex-shrink: 0; }
+.gv-crit {
+  flex-shrink: 0; font: 700 9px var(--font-heading); letter-spacing: 0.04em;
+  color: var(--prio0-fg); background: var(--prio0-bg); padding: 1px 4px; border-radius: 4px;
+}
+.gv-kebab {
+  border: none; background: none; cursor: pointer; color: var(--color-text-2);
+  display: flex; padding: 2px; flex-shrink: 0; opacity: 0;
+}
+.gv-row:hover .gv-kebab, .gv-kebab:focus-visible { opacity: 1; }
+/* Shared floating card (hover details, toolbar menus, link popover). */
+.gv-pop {
+  position: fixed; z-index: 50; background: var(--color-bg);
+  border: 1px solid var(--color-divider); box-shadow: var(--shadow-md);
+  padding: 10px 12px; font-size: 12px; max-width: 284px;
+}
+.gv-menu {
+  position: fixed; z-index: 50; background: var(--color-bg);
+  border: 1px solid var(--color-divider); box-shadow: var(--shadow-md);
+  padding: 4px 0; min-width: 168px; display: flex; flex-direction: column;
+}
+.gv-menu button { border: none; background: none; text-align: left; font: inherit; font-size: 13px; padding: 7px 14px; cursor: pointer; color: var(--color-text); }
+.gv-menu button:hover { background: var(--accent-wash); }
+.gv-menu button.danger { color: var(--prio-hi-text); }
+/* Popover menu rows — the Library export menu, and anything else that needs
+   a small anchored list of actions. Kept here rather than inline so the hover
+   state exists at all; an inline style cannot express :hover. */
+.popmenu-row { transition: background 120ms ease; }
+.popmenu-row:hover { background: var(--accent-wash); }
+@media (prefers-reduced-motion: reduce) { .popmenu-row { transition: none; } }
+
+.gv-dragtip {
+  position: fixed; z-index: 60; background: var(--color-accent); color: var(--on-accent);
+  font: 600 11px var(--font-mono); padding: 3px 8px; border-radius: 5px;
+  pointer-events: none; white-space: nowrap;
+}
+.gv-templine { position: fixed; inset: 0; z-index: 55; pointer-events: none; }
+.gv-legend { display: inline-flex; align-items: center; gap: 8px; color: var(--color-text-2); font-size: 11.5px; }
+.gv-legend i { flex-shrink: 0; display: inline-block; font-style: normal; }
+.gv-hint { color: var(--color-text-2); font-size: 11.5px; }
+@media (prefers-reduced-motion: reduce) { .gv-bar { transition: none; } }
+
+/* — modal — */
+.backdrop {
+  position: fixed; inset: 0; background: var(--dim); z-index: 50;
+  display: grid; place-items: center; padding: 24px;
+}
+/* Full-screen mobile sheet. Height uses dvh (vh fallback) so the footer
+   action row tracks the visible viewport instead of hiding behind the
+   browser's dynamic URL bar. */
+.sheet {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 100vh; height: 100dvh;
+  background: var(--color-bg); z-index: 50; display: flex; flex-direction: column;
+}
+
+/* — rendered markdown (notes preview) — */
+.mdview h1 { font-size: 26px; margin: 0 0 12px; }
+.mdview h2 { font-size: 18px; margin: 14px 0 8px; }
+.mdview h3 { font-size: 15px; margin: 12px 0 6px; }
+.mdview p { font-size: 14px; margin: 0 0 14px; line-height: 1.55; }
+.mdview ul, .mdview ol { margin: 0 0 14px; padding-left: 20px; font-size: 14px; line-height: 1.7; }
+.mdview code {
+  background: var(--accent-soft); color: var(--accent-deep);
+  padding: 1px 5px; font-size: 12px; font-family: var(--font-mono);
+  border-radius: 4px;
+}
+.mdview blockquote {
+  margin: 0 0 14px; padding: 6px 14px;
+  border-left: 3px solid var(--color-accent);
+  color: color-mix(in srgb, var(--color-text) 65%, transparent); font-size: 14px;
+}
+.mdview .wikilink {
+  color: var(--accent-strong); text-decoration: none; cursor: pointer;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+/* — callouts (rendered by renderMd, block editor, and note previews) — */
+.callout {
+  display: flex; gap: 8px; align-items: flex-start;
+  padding: 8px 11px; margin: 0 0 6px;
+  border: 1px solid var(--accent-mid); border-left-width: 3px;
+  border-radius: 8px;
+  background: var(--accent-soft); color: var(--color-text);
+}
+.callout .callout-ic { flex: none; line-height: 1.5; color: var(--accent-strong); }
+.callout-warn { border-color: var(--st-pending); background: color-mix(in srgb, var(--st-pending) 12%, transparent); }
+.callout-warn .callout-ic { color: var(--st-pending); }
+.callout-success { border-color: var(--st-done); background: color-mix(in srgb, var(--st-done) 12%, transparent); }
+.callout-success .callout-ic { color: var(--st-done); }
+.callout-danger { border-color: var(--prio-hi-border); background: color-mix(in srgb, var(--prio-hi-border) 12%, transparent); }
+.callout-danger .callout-ic { color: var(--prio-hi-text); }
+.mdview .callout { margin-bottom: 14px; }
+
+/* Sidebar note rows: reveal the "add subpage" + on hover. */
+.note-row { border-radius: var(--radius); }
+.note-row .note-add, .note-row .note-del { opacity: 0; transition: opacity 90ms; }
+.note-row:hover .note-add, .note-row:focus-within .note-add,
+.note-row:hover .note-del, .note-row:focus-within .note-del { opacity: 1; }
+.note-row .note-del:hover { color: var(--prio-hi-text); }
+.note-row:hover { background: color-mix(in srgb, var(--color-text) 5%, transparent); }
+
+/* — Notes block editor (Notion-style WYSIWYG over markdown) — */
+.blocks {
+  display: flex; flex-direction: column; padding: 8px 0 40vh; position: relative;
+  /* Word-style adjustable margin: the whole content column (hover gutter +
+     text) shifts right by --note-indent; the rule rides the boundary. */
+  padding-left: var(--note-indent, 0px);
+}
+/* Notebook margin rule — draggable, like a word processor's margin stop.
+   The 9px strip is the grab target; the visible 2px line is centered in it
+   (line x = indent + 44px, the gutter/text boundary). */
+.blk-margin {
+  position: absolute; top: 0; bottom: 0; width: 9px;
+  /* 65px = line-number column (26) + hover gutter (41) + flex gaps, so the
+     rule still rides the gutter/text boundary with numbers showing. */
+  left: calc(var(--note-indent, 0px) + 65px);
+  /* Below .blk-bar's sticky z-index 5: the rule spans the whole scrolled
+     column, so anything higher paints over the toolbar once you scroll. */
+  cursor: col-resize; z-index: 3; touch-action: none;
+  background: none; border: none; padding: 0;
+}
+.blk-margin::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px;
+  background: var(--accent-mid); opacity: 0.55; border-radius: 99px;
+}
+/* Grab pill at the top of the rule — the resting cue that this is draggable
+   (a bare 2px line reads as decoration). Deliberately slim: a scrollbar-thumb
+   sized pill centered ON the line, so it never crowds the first line of text. */
+.blk-margin::before {
+  content: ""; position: absolute; top: 8px; left: 5px; transform: translateX(-50%);
+  width: 5px; height: 30px; border-radius: 99px;
+  background: var(--accent-mid); opacity: 0.8;
+}
+.blk-margin:hover::after,
+.blk-margin:focus-visible::after,
+.blk-margin.dragging::after { opacity: 1; background: var(--color-accent); }
+.blk-margin:hover::before,
+.blk-margin:focus-visible::before,
+.blk-margin.dragging::before { background: var(--color-accent); opacity: 1; }
+.blk-row { display: flex; align-items: flex-start; gap: 2px; position: relative; padding: 1px 0; }
+/* Block line numbers: a quiet mono column left of the hover gutter. */
+.blk-lineno {
+  flex: none; width: 26px; text-align: right; user-select: none;
+  font: 500 10.5px var(--font-mono); color: var(--color-text-3);
+  padding-top: 7px; opacity: 0.7;
+}
+/* Word wrap off (bar toggle): code blocks scroll sideways instead of wrapping. */
+.blocks.nowrap .blk-codeview,
+.blocks.nowrap .blk-input.blk-code { white-space: pre; overflow-x: auto; }
+
+/* Markdown (raw) view: line-number gutter scroll-synced to the textarea. */
+.md-raw { display: flex; height: 100%; min-height: 320px; }
+.md-raw-gutter {
+  flex: none; width: 44px; margin: 0; padding: 20px 8px 20px 0; overflow: hidden;
+  text-align: right; user-select: none; border-right: 1px solid var(--color-divider-soft);
+  font: 500 13px/1.7 var(--font-mono); color: var(--color-text-3); background: none;
+}
+.blk-row.blk-dragging { opacity: 0.4; }
+.blk-row.blk-drop { box-shadow: inset 0 2px 0 var(--color-accent); }
+.blk-gutter {
+  flex: none; display: flex; gap: 1px; opacity: 0; transition: opacity 90ms;
+  padding-top: 3px;
+}
+.blk-row:hover .blk-gutter, .blk-row:focus-within .blk-gutter { opacity: 1; }
+.blk-handle {
+  width: 20px; height: 22px; display: grid; place-items: center;
+  border: none; background: none; cursor: pointer; color: var(--color-text-3);
+  font-size: 15px; line-height: 1; border-radius: 3px;
+}
+.blk-handle:hover { background: color-mix(in srgb, var(--color-text) 8%, transparent); color: var(--color-text); }
+.blk-grip { cursor: grab; font-size: 11px; letter-spacing: -2px; }
+.blk-body { flex: 1; min-width: 0; position: relative; }
+
+/* Rendered block ↔ its editing textarea share typography so focus doesn't jump. */
+.blk-input {
+  width: 100%; border: none; background: none; resize: none; overflow: hidden;
+  font-family: var(--font-body); color: var(--color-text);
+  padding: 3px 4px; margin: 0; line-height: 1.5;
+}
+.blk-input::placeholder { color: var(--color-text-3); }
+.blk-p, .blk-input.blk-p { font-size: 15px; line-height: 1.55; padding: 3px 4px; }
+.blk-h1, .blk-input.blk-h1 { font-family: var(--font-heading); font-weight: 700; font-size: 27px; line-height: 1.2; padding: 6px 4px 2px; }
+.blk-h2, .blk-input.blk-h2 { font-family: var(--font-heading); font-weight: 700; font-size: 20px; line-height: 1.2; padding: 5px 4px 2px; }
+.blk-h3, .blk-input.blk-h3 { font-family: var(--font-heading); font-weight: 600; font-size: 16px; line-height: 1.2; padding: 4px 4px 2px; }
+.blk-quote, .blk-input.blk-quote {
+  border-left: 3px solid var(--color-accent); padding: 3px 4px 3px 12px;
+  color: var(--color-text-2); font-size: 15px;
+}
+.blk-input.blk-callout { background: var(--accent-soft); border-left: 3px solid var(--accent-mid); padding-left: 10px; border-radius: 6px; }
+.blk-input.blk-code { font-family: var(--font-mono); font-size: 13px; background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: 8px; }
+
+/* List types were the one family missing from the rendered ↔ textarea
+   typography pairing above, so a focused list item silently dropped to the
+   browser's default form-control size. That also threw off the ghost overlay,
+   which mirrors the textarea's text to position itself. */
+.blk-input.blk-ul, .blk-input.blk-ol, .blk-input.blk-todo, .blk-input.blk-todo-done {
+  font-size: 15px; line-height: 1.55;
+}
+.blk-li { display: flex; gap: 8px; align-items: flex-start; font-size: 15px; padding: 3px 4px; }
+.blk-li > div { flex: 1; min-width: 0; }
+.blk-bullet { flex: none; line-height: 1.55; color: var(--color-text-2); }
+.blk-num { flex: none; line-height: 1.55; color: var(--color-text-2); font-variant-numeric: tabular-nums; }
+.blk-check {
+  flex: none; width: 17px; height: 17px; margin-top: 3px; display: grid; place-items: center;
+  border: 1.5px solid var(--color-divider); border-radius: 5px; background: none; cursor: pointer;
+  /* --on-accent flips white→near-black with the theme, which is exactly right
+     on the done-green fill too: dark mode's lighter green needs dark ink. */
+  color: var(--on-accent); font-size: 11px; line-height: 1;
+}
+.blk-check[data-done] { background: var(--st-done); border-color: var(--st-done); }
+.blk-todo-done { text-decoration: line-through; color: var(--color-text-2); }
+.blk-codeview {
+  margin: 2px 0; padding: 10px 12px; background: var(--color-surface);
+  border: 1px solid var(--color-divider); border-radius: 8px;
+  font-family: var(--font-mono); font-size: 13px;
+  overflow-x: auto; white-space: pre-wrap;
+}
+.blk-hr { border: none; border-top: 1px solid var(--color-divider); margin: 10px 4px; }
+.blk-empty { color: var(--color-text-3); }
+
+/* — tables — */
+.blk-tablewrap { padding: 3px 4px; }
+.blk-table { border-collapse: collapse; width: 100%; font-size: 14px; table-layout: fixed; }
+.blk-table th, .blk-table td { border: 1px solid var(--color-divider); padding: 0; vertical-align: top; }
+.blk-table th { background: var(--color-surface); }
+.blk-tcell {
+  width: 100%; box-sizing: border-box; border: none; background: none;
+  padding: 6px 8px; font: inherit; color: var(--color-text);
+}
+.blk-table th .blk-tcell { font-weight: 600; }
+.blk-tcell:focus { outline: 2px solid var(--accent-mid); outline-offset: -2px; }
+.blk-tcell::placeholder { color: var(--color-text-3); }
+.blk-tbar { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; margin-top: 5px; }
+.blk-tbar button {
+  border: 1px solid var(--color-divider); background: var(--color-bg); cursor: pointer;
+  font-size: 11px; color: var(--color-text-2); border-radius: 5px; padding: 2px 7px; font-family: var(--font-body);
+}
+.blk-tbar button:hover:not(:disabled) { background: var(--accent-wash); color: var(--color-text); }
+.blk-tbar button:disabled { opacity: 0.4; cursor: default; }
+.blk-tbar-danger { color: var(--prio-hi-text); }
+.blk-tbar-sep { width: 1px; height: 15px; background: var(--color-divider); margin: 0 2px; }
+.blk-tmenu {
+  position: absolute; top: 100%; left: 0; margin-top: 4px; z-index: 20;
+  background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: 8px;
+  box-shadow: var(--shadow-md); padding: 10px; display: flex; flex-direction: column; gap: 8px; min-width: 150px;
+}
+.blk-tmenu-row { display: flex; gap: 10px; }
+.blk-tmenu label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: var(--color-text-2); }
+.blk-tmenu input {
+  width: 56px; padding: 3px 6px; font-size: 13px; color: var(--color-text);
+  border: 1px solid var(--color-divider); border-radius: 5px; background: var(--color-surface);
+}
+
+/* Selection formatting toolbar — floats at the block's top-right while a
+   range is selected. */
+.blk-toolbar {
+  position: absolute; top: -30px; right: 0; z-index: 30; display: flex;
+  background: var(--color-bg); border: 1px solid var(--color-divider); box-shadow: var(--shadow-md);
+  border-radius: 8px; overflow: hidden;
+}
+.blk-toolbar button {
+  width: 30px; height: 28px; display: grid; place-items: center;
+  border: none; background: none; cursor: pointer; color: var(--color-text);
+  font-size: 13px; font-family: var(--font-body);
+}
+.blk-toolbar button + button { border-left: 1px solid var(--color-divider); }
+.blk-toolbar button:hover { background: color-mix(in srgb, var(--color-accent) 12%, transparent); }
+
+/* Slash command menu. */
+.blk-slash {
+  position: absolute; left: 4px; top: 100%; z-index: 40; margin-top: 2px; min-width: 240px;
+  max-height: 260px; overflow-y: auto; background: var(--color-bg);
+  border: 1px solid var(--color-divider); box-shadow: var(--shadow-md);
+  border-radius: 10px;
+  display: flex; flex-direction: column; padding: 4px 0;
+}
+.blk-slash-item {
+  display: flex; flex-direction: column; gap: 1px; text-align: left;
+  padding: 6px 12px; border: none; background: none; cursor: pointer; color: var(--color-text);
+}
+.blk-slash-item.sel, .blk-slash-item:hover { background: var(--accent-wash); }
+.blk-slash-label { font-size: 13px; font-weight: 500; }
+.blk-slash-hint { font-size: 11px; color: var(--color-text-3); }
+.blk-slash-empty { padding: 8px 12px; font-size: 12px; color: var(--color-text-2); }
+
+/* — markdown extras: nested lists, fenced code, task items, rules — */
+.mdview .md-code, .notepreview .md-code {
+  background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: 8px;
+  padding: 8px 10px; margin: 0 0 12px; overflow-x: auto;
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.5; white-space: pre;
+}
+.mdview .md-hr, .notepreview .md-hr { border: none; border-top: 1px solid var(--color-divider); margin: 14px 0; }
+.mdview .md-task, .notepreview .md-task { list-style: none; display: flex; align-items: baseline; gap: 6px; }
+.mdview .md-check, .notepreview .md-check {
+  flex: none; width: 14px; height: 14px; border: 1.5px solid var(--color-divider); border-radius: 5px;
+  display: inline-grid; place-items: center; font-size: 10px; line-height: 1; color: var(--on-accent);
+}
+.mdview .md-check-done, .notepreview .md-check-done { background: var(--st-done); border-color: var(--st-done); }
+.mdview ul ul, .mdview ol ol, .mdview ul ol, .mdview ol ul,
+.notepreview ul ul, .notepreview ol ol, .notepreview ul ol, .notepreview ol ul { margin: 2px 0; }
+
+/* — note preview (task cards): compact rendered markdown — */
+.notepreview { font-size: 12px; line-height: 1.5; color: var(--color-text-2); }
+.notepreview h1, .notepreview h2, .notepreview h3, .notepreview h4, .notepreview h5, .notepreview h6 {
+  font-size: 12px; font-weight: 600; margin: 4px 0 2px; color: var(--color-text);
+}
+.notepreview p { margin: 0 0 6px; }
+.notepreview ul, .notepreview ol { margin: 0 0 6px; padding-left: 16px; }
+.notepreview code {
+  background: var(--accent-soft); color: var(--accent-deep); padding: 0 3px;
+  font-family: var(--font-mono); font-size: 11px; border-radius: 4px;
+}
+.notepreview blockquote {
+  margin: 0 0 6px; padding: 2px 8px; border-left: 2px solid var(--color-accent); color: var(--color-text-2);
+}
+
+/* — notes editor: always-on formatting bar, help sheet, list nesting — */
+.blk-editor { display: flex; flex-direction: column; }
+.blk-bar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 2px; flex-wrap: wrap;
+  padding: 4px; margin-bottom: 6px;
+  background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: 10px;
+}
+.blk-bar-btn {
+  min-width: 26px; height: 26px; padding: 0 6px;
+  border: none; background: none; cursor: pointer; border-radius: 4px;
+  font-size: 12px; color: var(--color-text-2); font-family: var(--font-body);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.blk-bar-btn:hover { background: color-mix(in srgb, var(--color-accent) 12%, transparent); color: var(--color-text); }
+.blk-bar-help.on { background: var(--accent-soft); color: var(--accent-strong); }
+.blk-bar-sep { width: 1px; align-self: stretch; margin: 2px 4px; background: var(--color-divider); }
+.blk-help {
+  display: flex; gap: 28px; flex-wrap: wrap;
+  padding: 12px 14px; margin-bottom: 8px;
+  border: 1px solid var(--color-divider); border-radius: 10px; background: var(--color-surface);
+}
+.blk-help-col { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--color-text-2); }
+.blk-help-col strong { font-size: 12px; color: var(--color-text); margin-bottom: 2px; }
+.blk-hint { font-size: 12px; color: var(--color-text-3); padding: 2px 4px 8px; }
+.blk-help kbd, .blk-hint kbd {
+  font-family: var(--font-mono); font-size: 11px; background: var(--color-card);
+  border: 1px solid var(--color-divider); border-radius: 4px; padding: 0 4px; color: var(--color-text);
+}
+
+/* — scrollbars stay hairline-quiet — */
+* { scrollbar-width: thin; scrollbar-color: var(--color-divider) transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+[data-reduce-motion="true"] *, [data-reduce-motion="true"] *::before, [data-reduce-motion="true"] *::after {
+  transition: none !important; animation: none !important;
+}
+
+/* Field tokens on a task line (!P0 #tag ~90m @start(…) @id(…)) — present but
+   quiet, so a note stays a note rather than becoming a data table. `@id` is
+   dimmer still: it is the one token nobody ever wants to read. */
+.blk-meta, .md-meta {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--color-text-3);
+  opacity: 0.75;
+  margin-left: 0.4em;
+  word-break: break-word;
+}
+
+/* Ghost suggestion on a to-do line. The overlay repeats the textarea's own text
+   in transparent ink so the hint lands exactly where typing would continue —
+   wrapping and all — and inherits .blk-input's typography so the two can never
+   drift apart. Never interactive: every pointer event belongs to the textarea. */
+.blk-ghost {
+  position: absolute; inset: 0;
+  pointer-events: none; user-select: none;
+  color: transparent;
+  white-space: pre-wrap; overflow-wrap: break-word;
+}
+.blk-ghost-hint { color: var(--color-text-3); opacity: 0.62; }
+.blk-ghost-key {
+  color: var(--color-text-3); opacity: 0.45;
+  font-size: 0.78em; margin-left: 0.5em;
+  border: 1px solid var(--color-divider); border-radius: 4px; padding: 0 0.3em;
+}
+
+/* Drawing pad. The canvas is a fixed 1400×900 logical surface scaled to the
+   available width, so a sketch keeps its proportions on every device. */
+.drawpad {
+  margin: 4px 0; border: 1px solid var(--color-divider); border-radius: var(--radius-card);
+  background: var(--color-surface); overflow: hidden;
+}
+.drawpad-bar {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 6px 8px; border-bottom: 1px solid var(--color-divider-soft);
+}
+.drawpad-swatch {
+  width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--color-divider);
+  cursor: pointer; padding: 0; flex: none;
+}
+.drawpad-size {
+  width: 24px; height: 24px; display: grid; place-items: center; cursor: pointer;
+  background: none; border: 1px solid var(--color-divider); border-radius: 6px;
+  color: var(--color-text-2); flex: none;
+}
+.drawpad-btn {
+  display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+  background: none; border: 1px solid var(--color-divider); border-radius: 6px;
+  padding: 3px 8px; font-size: 12px; color: var(--color-text-2); font-family: var(--font-body);
+}
+.drawpad-btn:disabled { opacity: 0.4; cursor: default; }
+.drawpad-sep { width: 1px; height: 18px; background: var(--color-divider); flex: none; }
+/* Paper follows the theme; legibility is the INK's job — DrawPad paints the
+   default ink with the live --color-text (legacy #17171f strokes included),
+   so drawings stay readable on both papers. Patterns are CSS backgrounds
+   behind the transparent canvas: the eraser (destination-out) reveals them
+   instead of punching white holes, and they cost nothing in the saved JSON.
+   --paper-cell sets the ruling size; the toolbar swatches reuse the same
+   pattern rules at a smaller cell. */
+.drawpad-canvas { display: block; width: 100%; --paper-cell: 26px; }
+.drawpad-canvas, .drawpad-paper { background-color: var(--color-card); }
+.drawpad-canvas[data-paper="grid"], .drawpad-paper[data-paper="grid"] {
+  background-image: linear-gradient(var(--paper-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+  background-size: var(--paper-cell) var(--paper-cell);
+}
+.drawpad-canvas[data-paper="dots"], .drawpad-paper[data-paper="dots"] {
+  background-image: radial-gradient(var(--paper-dot) 1px, transparent 1.5px);
+  background-size: var(--paper-cell) var(--paper-cell);
+}
+.drawpad-canvas[data-paper="lines"], .drawpad-paper[data-paper="lines"] {
+  background-image: linear-gradient(var(--paper-line) 1px, transparent 1px);
+  background-size: 100% var(--paper-cell);
+}
+.drawpad-canvas[data-paper="checks"], .drawpad-paper[data-paper="checks"] {
+  background-image: conic-gradient(var(--paper-tint) 25%, transparent 0 50%, var(--paper-tint) 0 75%, transparent 0);
+  background-size: calc(var(--paper-cell) * 2) calc(var(--paper-cell) * 2);
+}
+.drawpad-paper {
+  width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--color-divider);
+  cursor: pointer; padding: 0; flex: none; --paper-cell: 6px;
+}
+
+/* ————— all-day events: the day notch —————
+   A birthday or anniversary is a property of the DAY, not a task with a start
+   time, so it hangs off the date as a small tag rather than joining the task
+   stream. Collapsed it shows only its emoji; hover/focus unfurls the name and
+   the repeat. See components/DayNotch.tsx for why the unfurled tag floats.
+
+   --event-* is a warm sand, deliberately outside the four status hues
+   (--st-pending amber / --st-progress violet / --st-done green /
+   --st-skipped rose) so an event can never be misread as a state. */
+:root {
+  --event-tint: #fbf3e4;
+  --event-edge: #cfa45f;
+  --event-ink: #5b4a2e;
+}
+[data-theme="dark"] {
+  /* Dark is SELECTED, not flipped: its own steps, re-validated against the
+     dark card, and the top step lightens past the accent rather than darkening
+     into it (on a dark ground "more" has to mean brighter). */
+  --heat-0: color-mix(in srgb, var(--color-text) 13%, var(--color-card));
+  --heat-1: color-mix(in srgb, var(--color-accent) 40%, var(--color-card));
+  --heat-2: color-mix(in srgb, var(--color-accent) 70%, var(--color-card));
+  --heat-3: var(--color-accent);
+  --heat-4: color-mix(in srgb, var(--color-accent) 72%, #ffffff);
+  --event-tint: color-mix(in srgb, #e0a94b 16%, var(--color-bg));
+  --event-edge: #b18a44;
+  --event-ink: #eddcb8;
+}
+
+.day-notch-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+/* The day event as a bookmark tag: a small ribbon with a swallowtail notch
+   cut into its trailing edge and a solid leading spine, so it reads as
+   "bookmarked onto this date" rather than as the day's first task. The
+   swallowtail is a clip-path, so the tag's width just tracks its content
+   (emoji alone when collapsed, the full label when unfurled). */
+.day-notch,
+.day-notch-tag {
+  --notch-tail: 5px;
+  clip-path: polygon(
+    0 0, 100% 0,
+    100% 50%, calc(100% - var(--notch-tail)) 50%, 100% 100%,
+    0 100%
+  );
+}
+
+.day-notch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 17px;
+  padding: 0 calc(3px + var(--notch-tail)) 0 5px;
+  border: none;
+  border-radius: 3px 2px 2px 3px;
+  background: var(--event-tint);
+  box-shadow: inset 2px 0 0 var(--event-edge);
+  color: var(--event-ink);
+  font-family: var(--font-body);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  flex: none;
+}
+
+.day-notch:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  clip-path: none;
+}
+
+.day-notch-emoji {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.day-notch-more {
+  height: 17px;
+  padding: 0 3px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px dashed var(--color-divider);
+  border-radius: 5px;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--color-text-2);
+  flex: none;
+}
+
+/* The unfurled tag: drawn at the collapsed chip's own coordinates and grown
+   rightward, so it reads as the chip expanding in place while escaping every
+   ancestor's overflow (month cells, schedule headers and the gantt axis all
+   clip). Same bookmark silhouette, on a raised card background. */
+.day-notch-tag {
+  position: fixed;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 17px;
+  padding: 0 calc(6px + var(--notch-tail)) 0 6px;
+  border: none;
+  border-radius: 3px 2px 2px 3px;
+  background: var(--color-card);
+  box-shadow: inset 2px 0 0 var(--event-edge), var(--shadow-md);
+  color: var(--event-ink);
+  font-family: var(--font-body);
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  transform-origin: left center;
+  animation: day-notch-unfurl 170ms cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+.day-notch-label { font-weight: 600; }
+
+.day-notch-meta {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-2);
+}
+
+@keyframes day-notch-unfurl {
+  from { transform: scaleX(0.7); opacity: 0.3; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .day-notch-tag { animation: none; }
+}
+[data-reduce-motion="true"] .day-notch-tag { animation: none; }
+
+/* A day carrying an all-day event runs a faint rule down the gantt body, so
+   bars crossing that birthday/holiday are visible at a glance. */
+.gv-event-line {
+  position: absolute; top: 0; bottom: 0; width: 0;
+  border-left: 1px dashed var(--event-edge);
+  opacity: 0.75; pointer-events: none;
+}
+
+/* Row/card marker for an all-day event in the views with no date axis
+   (List, Kanban, Eisenhower) — the same sand language as the notch. */
+.event-pill {
+  display: inline-flex; align-items: center; flex: none;
+  border: 1px solid var(--event-edge); background: var(--event-tint); color: var(--event-ink);
+  border-radius: 999px; padding: 0 6px;
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.04em; text-transform: uppercase;
+}
+
+/* ————— Movable, resizable panels (components/PanelGrid.tsx) —————
+   The affordances stay invisible until the panel is hovered or something
+   inside it takes focus: an untouched dashboard should look exactly as it
+   did before this existed, and a grid peppered with grips reads as clutter
+   the moment you are not rearranging anything. */
+
+.panel { position: relative; min-width: 0; min-height: 0; }
+
+/* A panel's content fills the cell it was given and scrolls past it — the
+   height is now the user's choice, so the card cannot set its own. */
+.panel > *:not(.panel-handle):not(.panel-grip):not(.panel-size) {
+  height: 100%;
+  overflow: auto;
+}
+
+/* Visible at rest, not hidden until hover. They started out appearing only on
+   hover so an untouched dashboard would look unchanged — and the result was a
+   feature nobody could find: the panels were movable and the affordance
+   saying so was invisible. Quiet beats absent. */
+.panel-handle,
+.panel-grip {
+  position: absolute;
+  opacity: 0.38;
+  transition: opacity 120ms ease;
+  z-index: 2;
+}
+.panel:hover .panel-handle,
+.panel:hover .panel-grip,
+.panel:focus-within .panel-handle,
+.panel:focus-within .panel-grip,
+.panel[data-dragging="true"] .panel-handle,
+.panel[data-resizing="true"] .panel-grip { opacity: 1; }
+.panel-handle:focus-visible,
+.panel-grip:focus-visible { opacity: 1; }
+
+.panel-handle {
+  top: 6px; right: 6px;
+  display: grid; place-items: center;
+  width: 24px; height: 24px; padding: 0;
+  cursor: grab;
+  color: var(--color-text-3);
+  background: var(--color-card);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-sm);
+  /* The finger must not scroll the page away while long-pressing to move. */
+  touch-action: none;
+}
+.panel-handle:hover { color: var(--color-text); border-color: var(--accent-mid); }
+.panel-handle:active { cursor: grabbing; }
+
+.panel-grip {
+  right: 2px; bottom: 2px;
+  width: 16px; height: 16px;
+  cursor: nwse-resize;
+  touch-action: none;
+  /* Two stacked strokes, the standard corner-grip idiom, drawn rather than
+     shipped as an icon so it tints with the theme for free. */
+  background:
+    linear-gradient(135deg, transparent 45%, var(--color-text-3) 45%, var(--color-text-3) 55%, transparent 55%),
+    linear-gradient(135deg, transparent 70%, var(--color-text-3) 70%, var(--color-text-3) 80%, transparent 80%);
+  border-bottom-right-radius: var(--radius-card);
+}
+.panel-grip:hover { background-color: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+
+/* Live footprint while dragging the grip — without it a resize is guesswork
+   until you let go. */
+.panel-size {
+  position: absolute; right: 8px; bottom: 8px; z-index: 3;
+  font: 700 10px var(--font-mono);
+  padding: 2px 6px; border-radius: 999px;
+  background: var(--color-accent); color: var(--on-accent);
+  pointer-events: none;
+}
+
+.panel[data-dragging="true"] { opacity: 0.5; }
+.panel[data-resizing="true"] { outline: 1.5px solid var(--color-accent); outline-offset: -1.5px; }
+
+/* Where the dragged panel would land. A single edge rule rather than a
+   shifting placeholder: the grid reflows on drop anyway, and a live
+   placeholder made every panel jump under the cursor. */
+.panel[data-drop="before"]::before,
+.panel[data-drop="after"]::after {
+  content: "";
+  position: absolute; top: 0; bottom: 0; width: 3px; z-index: 3;
+  background: var(--color-accent);
+  border-radius: 999px;
+}
+.panel[data-drop="before"]::before { left: -7px; }
+.panel[data-drop="after"]::after { right: -7px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-handle, .panel-grip { transition: none; }
+}
+[data-reduce-motion="true"] .panel-handle,
+[data-reduce-motion="true"] .panel-grip { transition: none; }
+
+/* Coarse pointers get no hover to reveal anything, so the handle stays put. */
+@media (hover: none) {
+  .panel-handle { opacity: 1; }
+  .panel-grip { opacity: 0.65; }
+}
+
+/* A habit-detail chart inside a panel: heading fixed, body scrolls. */
+.hd-block {
+  height: 100%;
+  display: flex; flex-direction: column; min-height: 0;
+  border: 1px solid var(--color-divider); border-radius: var(--radius-card);
+  background: var(--color-card);
+  padding: 12px 14px;
+}
+/* Room for the panel handle in the top-right corner. */
+.hd-block > .cap { padding-right: 30px; }
+
+/* ————— Events screen —————
+   The all-day events list (screens/todo/Events.tsx). It borrows the sand
+   event language from the notch rather than the accent, for the same reason
+   the notch does: an event is not a status. The accent stays reserved for
+   "this is near" — the soonest tiles and the relative-day tail. */
+
+.ev-toolbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.ev-range {
+  font: 600 15px/1.2 var(--font-heading);
+  min-width: 128px;
+}
+.ev-add { margin-left: auto; }
+
+.ev-glance {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.ev-tile {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  padding: 10px 12px; cursor: pointer; text-align: left;
+  border: 1px solid var(--color-divider); border-radius: var(--radius-card);
+  background: var(--color-card); color: inherit;
+  transition: transform 120ms ease, border-color 120ms ease;
+}
+.ev-tile:hover { transform: translateY(-1px); border-color: var(--event-edge); }
+.ev-tile:active { transform: translateY(0); }
+.ev-tile-count { font: 700 20px/1 var(--font-mono); letter-spacing: -1px; }
+.ev-tile-label {
+  font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--color-text-2);
+}
+
+/* A section now lives in a fixed-height panel cell, so the header stays put
+   and only the rows scroll — the generic `.panel > *` scroll would otherwise
+   carry the header off the top of its own section. */
+.ev-section {
+  border: 1px solid var(--color-divider); border-radius: var(--radius-card);
+  background: var(--color-card);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.panel > .ev-section { overflow: hidden; }
+.ev-sechead { flex: none; }
+.ev-sechead {
+  width: 100%; display: flex; align-items: center; gap: 9px;
+  padding: 11px 13px; cursor: pointer;
+  background: none; border: none; color: inherit; text-align: left;
+}
+.ev-sechead:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+.ev-secchevron { display: flex; color: var(--color-text-3); transition: transform 120ms ease; }
+.ev-secchevron[data-open="true"] { transform: rotate(90deg); }
+.ev-secemoji { font-size: 15px; line-height: 1; }
+.ev-sectitle {
+  font: 600 12px/1.2 var(--font-heading); letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--color-text-2);
+}
+.ev-seccount {
+  font: 700 10px var(--font-mono); padding: 2px 6px; border-radius: 999px;
+  background: var(--event-tint); color: var(--event-ink);
+  border: 1px solid var(--event-edge);
+}
+.ev-secsummary {
+  margin-left: auto; font-size: 12px; color: var(--color-text-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52%;
+}
+/* Room for the panel handle sitting at the header's right edge. */
+.panel .ev-sechead { padding-right: 36px; }
+
+.ev-list { list-style: none; margin: 0; padding: 0 0 4px; flex: 1; min-height: 0; overflow-y: auto; }
+.ev-row {
+  width: 100%; display: flex; align-items: center; gap: 10px;
+  padding: 8px 13px; cursor: pointer;
+  background: none; border: none; border-top: 1px solid var(--color-divider);
+  color: inherit; text-align: left;
+}
+.ev-row:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+.ev-row[data-past="true"] { opacity: 0.55; }
+.ev-row-emoji { font-size: 15px; line-height: 1; flex: none; }
+.ev-row-title {
+  font-size: 13px; font-weight: 500; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ev-row-repeat {
+  flex: none; font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 1px 6px; border-radius: 999px;
+  border: 1px solid var(--event-edge); background: var(--event-tint); color: var(--event-ink);
+}
+.ev-row-date {
+  margin-left: auto; flex: none; font-family: var(--font-mono);
+  font-size: 11px; color: var(--color-text-2);
+}
+.ev-row-rel {
+  flex: none; min-width: 84px; text-align: right;
+  font-size: 11px; color: var(--color-text-3);
+}
+/* The one place the accent earns its keep here: a week or less away. */
+.ev-row-rel[data-soon="true"] { color: var(--accent-strong); font-weight: 600; }
+
+.ev-add-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 14px 18px; border-bottom: 1px solid var(--color-divider);
+}
+.ev-add-body {
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 14px;
+  overflow-y: auto;
+}
+.ev-add-foot {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; border-top: 1px solid var(--color-divider);
+}
+.ev-add-foot .btn-secondary { margin-left: auto; }
+.ev-chiprow { display: flex; gap: 6px; flex-wrap: wrap; }
+.ev-emoji {
+  width: 30px; height: 30px; font-size: 15px; line-height: 1; cursor: pointer;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-divider); background: var(--color-card);
+}
+.ev-emoji[data-on="true"] { border-color: var(--event-edge); background: var(--event-tint); }
+
+@media (max-width: 800px) {
+  .ev-glance { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .ev-tile { padding: 8px 9px; }
+  .ev-tile-count { font-size: 17px; }
+  .ev-tile-label { font-size: 9.5px; }
+  .ev-add { margin-left: 0; }
+  .ev-range { min-width: 0; font-size: 14px; }
+  /* The date and its "in 6 days" tail matter more than the repeat badge on a
+     phone row — the badge is the first thing to go. */
+  .ev-row-repeat { display: none; }
+  .ev-row-rel { min-width: 68px; }
+  .ev-secsummary { max-width: 44%; font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ev-tile { transition: none; }
+}
+[data-reduce-motion="true"] .ev-tile { transition: none; }
+
+/* ————— Thermal — the receipt-printer theme —————
+   One ink (a warm near-black), one paper (warm thermal white), and the
+   classic two-color-receipt-printer red as the only second ink. Everything
+   is monospaced, square, and MOTIONLESS — a receipt is printed, so state
+   stamps instead of gliding, emphasis is an inverted ink block, structure
+   is a dashed rule. Thermal is an explicit choice only ("system" resolves
+   dark/light in App.tsx). This block sits at the end of the file so it
+   out-cascades the [data-accent] families at equal specificity — and the
+   [data-theme="dark"][data-accent] combos can never co-apply with it. The
+   forced-dark islands (FocusMode, ScanMode) re-token their own subtree via
+   a local data-theme="dark", so they intentionally stay midnight dark.
+
+   Token block first (palette), expression rules after (what a token VALUE
+   can't say: border styles, casing, tracking, state mechanics, motion). */
+
+[data-theme="thermal"] {
+  --color-bg: #e9e6dd;        /* the counter the receipt lies on */
+  --color-surface: #faf8f1;   /* thermal paper */
+  --color-card: #fffdf6;      /* fresh paper */
+  --color-text: #1c1a15;      /* warm thermal ink */
+  --color-text-2: color-mix(in srgb, #1c1a15 72%, transparent);
+  --color-text-3: color-mix(in srgb, #1c1a15 58%, transparent);
+  --color-divider: color-mix(in srgb, #1c1a15 34%, transparent);
+  --color-divider-soft: color-mix(in srgb, #1c1a15 18%, transparent);
+  --color-corner: color-mix(in srgb, #1c1a15 55%, transparent);
+
+  /* The whole accent family collapses onto the ink. */
+  --color-accent: #1c1a15;
+  --on-accent: #faf8f1;
+  --accent-rgb: 28, 26, 21;
+  --accent-strong: #1c1a15;
+  --accent-deep: #1c1a15;
+  --accent-soft: rgba(28, 26, 21, 0.07);
+  --accent-mid: rgba(28, 26, 21, 0.32);
+  --accent-wash: rgba(28, 26, 21, 0.08);
+  --accent-hover: #3a372e;
+  --accent-grad-a: #1c1a15;
+  --accent-grad-b: #3a372e;
+
+  --bookmark: #c2371f;
+  --bookmark-edge: #8f2312;
+  --on-bookmark: #fdf3f0;
+
+  /* Status = ink weight; red is reserved for skipped/danger. */
+  --st-pending: #8f8a7c;
+  --st-progress: #1c1a15;
+  --st-paused: #6b6558;
+  --st-done: #57534a;
+  --st-skipped: #c2371f;
+  --prio-hi-border: #c2371f;
+  --prio-hi-text: #a52c17;
+  --now-line: #c2371f;
+  --sync-busy: var(--color-text);
+  --sync-warn: var(--color-text);
+  --sync-bad: #c2371f;
+
+  --grid-line: color-mix(in srgb, #1c1a15 5%, transparent);
+  --dot-line: color-mix(in srgb, #1c1a15 12%, transparent);
+  --paper-line: color-mix(in srgb, #1c1a15 12%, transparent);
+  --paper-dot: color-mix(in srgb, #1c1a15 26%, transparent);
+  --paper-tint: color-mix(in srgb, #1c1a15 5%, transparent);
+  --dim: rgba(28, 26, 21, 0.4);
+
+  /* Cut paper has no corner radius. */
+  --radius: 0px;
+  --radius-card: 0px;
+  --radius-sm: 0px;
+
+  /* The "juice" layer dries out: glows become hard ink-offset drops. */
+  --glow-btn: 2px 2px 0 rgba(28, 26, 21, 0.25);
+  --glow-badge: 2px 2px 0 rgba(28, 26, 21, 0.25);
+  --glow-card: 2px 2px 0 rgba(28, 26, 21, 0.18);
+  --glow-fab: 3px 3px 0 rgba(28, 26, 21, 0.3);
+  --pulse-ring: rgba(28, 26, 21, 0.35);
+  --glow-wash: none;
+  --seg-track: #efece3;
+  --seg-active-bg: #1c1a15;   /* inverted ink block — .seg-opt.active flips its text below */
+  --prio-bg: #efece3;      --prio-fg: #57534a;
+  --prio0-bg: #f6e7df;     --prio0-fg: #a52c17;
+  --prio1-bg: #f2efe6;     --prio1-fg: #57534a;
+  --head-progress: #1c1a15;
+  --head-done: #57534a;
+  --head-skipped: #a52c17;
+  --count-neutral: #e5e1d4;
+  --count-progress: rgba(28, 26, 21, 0.14);
+  --count-done: rgba(28, 26, 21, 0.08);
+  --count-skipped: rgba(194, 55, 31, 0.14);
+
+  /* Everything prints in the mono face. */
+  --font-heading: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-body: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Flat print shadows: hard-edged, zero blur. */
+  --shadow-sm: 0 1px 0 rgba(28, 26, 21, 0.2);
+  --shadow-md: 3px 3px 0 rgba(28, 26, 21, 0.16);
+  --shadow-lg: 5px 5px 0 rgba(28, 26, 21, 0.16);
+
+  /* All-day events lose the sand tint — plain paper, gray edge. */
+  --event-tint: #f2efe6;
+  --event-edge: #57534a;
+  --event-ink: #1c1a15;
+}
+
+/* — print physics: state stamps, it never animates — */
+[data-theme="thermal"] .blueprint.lift,
+[data-theme="thermal"] .btn-primary,
+[data-theme="thermal"] .seg-opt,
+[data-theme="thermal"] .toggle .knob,
+[data-theme="thermal"] .popmenu-row,
+[data-theme="thermal"] .status-cycle,
+[data-theme="thermal"] .col-resizer::after,
+[data-theme="thermal"] .te-secchevron,
+[data-theme="thermal"] .gv-bar,
+[data-theme="thermal"] .note-row .note-add,
+[data-theme="thermal"] .note-row .note-del,
+[data-theme="thermal"] .blk-gutter,
+[data-theme="thermal"] .lineageBody,
+[data-theme="thermal"] .lineageTag,
+[data-theme="thermal"] .graphcanvas .graphnode {
+  transition: none;
+}
+[data-theme="thermal"] .blueprint.lift:hover { transform: none; box-shadow: none; }
+[data-theme="thermal"] .btn-primary:hover { transform: none; }
+[data-theme="thermal"] .btn-secondary:active,
+[data-theme="thermal"] .btn-primary:active { transform: none; }
+[data-theme="thermal"] .fab:hover { transform: none; }
+[data-theme="thermal"] .gv-bar:hover { filter: none; }
+[data-theme="thermal"] .stsq.pulse { animation: none; }
+[data-theme="thermal"] .day-notch-tag { animation: none; }
+
+/* Printed text selects as an ink-block invert. */
+[data-theme="thermal"] ::selection { background: var(--color-text); color: var(--color-surface); }
+
+/* — segmented control: the active option is an inverted ink block — */
+[data-theme="thermal"] .seg-opt.active { color: var(--color-bg); box-shadow: none; }
+
+/* — action buttons print as uppercase labels (user content lives in cards
+     and inputs, not .btn, so nothing user-authored is re-cased) — */
+[data-theme="thermal"] .btn,
+[data-theme="thermal"] .tabbar button {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* — receipt masthead — */
+[data-theme="thermal"] .wm { letter-spacing: 0.18em; text-transform: uppercase; }
+
+/* — pills, dots and rounded remnants square into ticket stubs. The token
+     radii already zero the .btn/.seg/.input/.blueprint families; these are
+     the hardcoded 999px/50%/Npx stragglers. The drawpad's color swatches
+     stay round on purpose (physical media, not chrome). — */
+[data-theme="thermal"] .fab,
+[data-theme="thermal"] .chip,
+[data-theme="thermal"] .tag,
+[data-theme="thermal"] .seg-ink .seg-opt,
+[data-theme="thermal"] .event-pill,
+[data-theme="thermal"] .gv-tick,
+[data-theme="thermal"] .stsq,
+[data-theme="thermal"] .toggle,
+[data-theme="thermal"] .toggle .knob,
+[data-theme="thermal"] .logoBadge,
+[data-theme="thermal"] .prio,
+[data-theme="thermal"] .blk-check,
+[data-theme="thermal"] .mdview .md-check,
+[data-theme="thermal"] .notepreview .md-check,
+[data-theme="thermal"] .mdview code,
+[data-theme="thermal"] .notepreview code,
+[data-theme="thermal"] .callout,
+[data-theme="thermal"] .blk-toolbar,
+[data-theme="thermal"] .blk-slash,
+[data-theme="thermal"] .blk-tmenu,
+[data-theme="thermal"] .blk-tmenu input,
+[data-theme="thermal"] .blk-codeview,
+[data-theme="thermal"] .blk-input.blk-callout,
+[data-theme="thermal"] .blk-input.blk-code,
+[data-theme="thermal"] .blk-bar,
+[data-theme="thermal"] .blk-bar-btn,
+[data-theme="thermal"] .blk-handle,
+[data-theme="thermal"] .blk-tbar button,
+[data-theme="thermal"] .blk-help kbd,
+[data-theme="thermal"] .blk-hint kbd,
+[data-theme="thermal"] .blk-ghost-key,
+[data-theme="thermal"] .cell-input,
+[data-theme="thermal"] .gv-bar,
+[data-theme="thermal"] .gv-progress,
+[data-theme="thermal"] .gv-ms,
+[data-theme="thermal"] .gv-crit,
+[data-theme="thermal"] .gv-gdot,
+[data-theme="thermal"] .gv-gline,
+[data-theme="thermal"] .gv-dragtip,
+[data-theme="thermal"] .day-notch,
+[data-theme="thermal"] .day-notch-tag,
+[data-theme="thermal"] .day-notch-more,
+[data-theme="thermal"] .drawpad-size,
+[data-theme="thermal"] .drawpad-btn,
+[data-theme="thermal"] .drawpad-paper,
+[data-theme="thermal"] .lineageTag {
+  border-radius: 0;
+}
+[data-theme="thermal"] .gv-today::before { border-radius: 0; }
+/* Thermal draws in one ink with borders, not shadows — give the bookmark tag
+   its edge back (the clip-path trims it along the swallowtail). */
+[data-theme="thermal"] .day-notch,
+[data-theme="thermal"] .day-notch-tag {
+  border: 1px solid var(--event-edge);
+  box-shadow: inset 2px 0 0 var(--event-edge);
+}
+[data-theme="thermal"] .gv-dot { border-radius: 0; }
+
+/* — dashed receipt rules on the structural seams — */
+[data-theme="thermal"] .tabbar { border-top-style: dashed; }
+[data-theme="thermal"] .gv-head { border-bottom-style: dashed; }
+[data-theme="thermal"] .gv-corner,
+[data-theme="thermal"] .gv-cell { border-right-style: dashed; }
+[data-theme="thermal"] .table th { border-bottom-style: dashed; }
+[data-theme="thermal"] .te-section { border-style: dashed; }
+[data-theme="thermal"] .blk-hr,
+[data-theme="thermal"] .mdview .md-hr,
+[data-theme="thermal"] .notepreview .md-hr { border-top-style: dashed; }
+
+/* — fine print — */
+[data-theme="thermal"] body,
+[data-theme="thermal"] { font-variant-ligatures: none; }
+
+/* ————— E-ink — the electronic-paper theme —————
+   What an e-reader actually renders: a five-step gray ladder printed on paper
+   white, no hue anywhere, no shadow (a reflective screen has no light to cast
+   one), and NO MOTION — an e-ink panel refreshes, it does not animate, and a
+   transition on that hardware is a smear. Contrast is pushed hard because the
+   panel's own contrast is poor, so mid-grays that read fine on a backlit
+   screen vanish on paper.
+
+   Deliberately close in structure to Thermal above and deliberately different
+   in feel: Thermal is one ink on a receipt (square, uppercase, dashed rules,
+   a red second ink); E-ink is a book page (soft radii kept, sentence case,
+   solid hairlines, no second ink at all). Like Thermal it is an explicit
+   choice — "system" resolves dark/light, never this — and it sits after the
+   [data-accent] families so it out-cascades them at equal specificity.
+
+   Token block first (palette), expression rules after (what a token VALUE
+   cannot say: motion, borders, the flattening of tinted fills). */
+
+[data-theme="eink"] {
+  --color-bg: #dedbd4;        /* the frame around the panel */
+  --color-surface: #f2f0eb;   /* the page */
+  --color-card: #fbfaf7;      /* a page held to the light */
+  --color-text: #16171a;      /* the darkest the panel can print */
+  --color-text-2: #4a4d52;
+  --color-text-3: #6f7379;
+  --color-divider: #b6b4ad;
+  --color-divider-soft: #cfcdc6;
+  --color-corner: #8b8e93;
+
+  /* No hue survives: the accent is the ink itself, one step lighter than body
+     text so emphasis still reads as emphasis on a low-contrast panel. */
+  --color-accent: #16171a;
+  --on-accent: #f2f0eb;
+  --accent-rgb: 22, 23, 26;
+  --accent-strong: #000000;
+  --accent-deep: #000000;
+  --accent-soft: rgba(22, 23, 26, 0.06);
+  --accent-mid: rgba(22, 23, 26, 0.3);
+  --accent-wash: rgba(22, 23, 26, 0.07);
+  --accent-hover: #35383d;
+  --accent-grad-a: #16171a;
+  --accent-grad-b: #35383d;
+
+  --bookmark: #4a4d52;
+  --bookmark-edge: #16171a;
+  --on-bookmark: #f2f0eb;
+
+  /* Status is a position on the gray ladder, since the panel has no color to
+     spend: pending is faint, in-progress is full ink, done recedes, skipped is
+     the same weight as done but is drawn hatched everywhere already. */
+  --st-pending: #9a9da2;
+  --st-progress: #16171a;
+  --st-paused: #565a60;
+  --st-done: #6f7379;
+  --st-skipped: #85888d;
+  --prio-hi-border: #16171a;
+  --prio-hi-text: #16171a;
+  --now-line: #16171a;
+  --sync-busy: var(--color-text);
+  --sync-warn: var(--color-text);
+  --sync-bad: var(--color-text);
+
+  --grid-line: rgba(22, 23, 26, 0.07);
+  --dot-line: rgba(22, 23, 26, 0.14);
+  --paper-line: rgba(22, 23, 26, 0.13);
+  --paper-dot: rgba(22, 23, 26, 0.26);
+  --paper-tint: rgba(22, 23, 26, 0.05);
+  --dim: rgba(22, 23, 26, 0.42);
+
+  /* Radii stay — a book page has rounded corners; a receipt does not. */
+
+  /* A reflective panel casts nothing. Every glow and shadow becomes a hairline
+     or disappears, so depth is expressed by borders alone. */
+  --glow-btn: none;
+  --glow-badge: none;
+  --glow-card: none;
+  --glow-fab: none;
+  --glow-wash: none;
+  --pulse-ring: rgba(22, 23, 26, 0.2);
+  --shadow-sm: none;
+  --shadow-md: 0 0 0 1px rgba(22, 23, 26, 0.16);
+  --shadow-lg: 0 0 0 1px rgba(22, 23, 26, 0.22);
+
+  --seg-track: #e2e0d9;
+  --seg-active-bg: #16171a;
+  --prio-bg: #e2e0d9;      --prio-fg: #4a4d52;
+  --prio0-bg: #16171a;     --prio0-fg: #f2f0eb;
+  --prio1-bg: #cfcdc6;     --prio1-fg: #16171a;
+  --head-progress: #16171a;
+  --head-done: #6f7379;
+  --head-skipped: #85888d;
+  --count-neutral: #e2e0d9;
+  --count-progress: rgba(22, 23, 26, 0.16);
+  --count-done: rgba(22, 23, 26, 0.08);
+  --count-skipped: rgba(22, 23, 26, 0.08);
+
+  /* A serif body is what e-readers set long text in, and it is legible at low
+     contrast in a way a thin sans is not. Numbers stay mono so timers and
+     estimates keep their column alignment. */
+  --font-heading: "Instrument Sans", system-ui, -apple-system, sans-serif;
+  --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Source Serif 4", serif;
+
+  /* All-day events lose the sand tint: a hairline box, nothing more. */
+  --event-tint: #e6e4dd;
+  --event-edge: #6f7379;
+  --event-ink: #16171a;
+}
+
+/* — panel physics: an e-ink screen refreshes, it never animates — */
+[data-theme="eink"] *,
+[data-theme="eink"] *::before,
+[data-theme="eink"] *::after {
+  transition: none !important;
+  animation: none !important;
+}
+[data-theme="eink"] .blueprint.lift:hover,
+[data-theme="eink"] .btn-primary:hover,
+[data-theme="eink"] .btn-secondary:active,
+[data-theme="eink"] .btn-primary:active,
+[data-theme="eink"] .fab:hover { transform: none; box-shadow: none; }
+[data-theme="eink"] .gv-bar:hover { filter: none; }
+
+/* — hover is a border darkening, not a lift or a wash — */
+[data-theme="eink"] .btn-secondary:hover,
+[data-theme="eink"] .blueprint.lift:hover { border-color: var(--color-text); }
+
+/* — selection inverts, exactly as a highlight does on a reader — */
+[data-theme="eink"] ::selection { background: var(--color-text); color: var(--color-surface); }
+
+/* — the active segment is a solid ink block; its label flips to the page — */
+[data-theme="eink"] .seg-opt.active { color: var(--color-surface); box-shadow: none; }
+
+/* — anything that leaned on a colour gradient flattens to flat ink — */
+[data-theme="eink"] .btn-primary,
+[data-theme="eink"] .fab,
+[data-theme="eink"] .logoBadge {
+  background: var(--color-text);
+  color: var(--color-surface);
+  border-color: var(--color-text);
+}
+
+/* — hairline rules everywhere a shadow used to separate two surfaces — */
+[data-theme="eink"] .blueprint,
+[data-theme="eink"] .table th,
+[data-theme="eink"] .gv-head { border-color: var(--color-divider); }
+
+/* — body copy is set as a page: a touch more line height, no ligature
+     trickery the panel would smear on a partial refresh — */
+[data-theme="eink"] body { line-height: 1.6; }

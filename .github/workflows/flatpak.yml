@@ -1,0 +1,63 @@
+# LetsGo webapp -> Flatpak (x86_64).
+#
+# Builds an installable single-file bundle and attaches it to the workflow run.
+# Download it and install with:
+#
+#   flatpak install --user ./letsgo.flatpak
+#
+# The bundle is UNSIGNED. Signing and hosting an OTA repo is a deployment
+# concern for whoever publishes the build, not something this repo does — see
+# packaging/flatpak/README.md for how to sign and serve your own repo.
+
+name: Flatpak
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: flatpak-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  APP_ID: com.rubixcoder.letsgo
+
+jobs:
+  build:
+    name: Build the Flatpak (x86_64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-app
+
+      - name: Install flatpak-builder + runtimes
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          flatpak remote-add --user --if-not-exists flathub \
+            https://flathub.org/repo/flathub.flatpakrepo
+          flatpak install -y --user flathub \
+            org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 \
+            org.electronjs.Electron2.BaseApp//24.08
+
+      - name: Build
+        env:
+          LETSGO_REPO_DIR: ${{ runner.temp }}/repo
+        run: ./packaging/flatpak/build-flatpak.sh --no-install
+
+      - name: Export a single-file bundle
+        run: |
+          flatpak build-bundle "${{ runner.temp }}/repo" \
+            "$GITHUB_WORKSPACE/letsgo.flatpak" "$APP_ID" master
+          ls -lh "$GITHUB_WORKSPACE/letsgo.flatpak"
+
+      - name: Upload the bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: letsgo-flatpak-x86_64
+          path: letsgo.flatpak
+          if-no-files-found: error

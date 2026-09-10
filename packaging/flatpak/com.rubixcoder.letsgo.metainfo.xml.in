@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Template. build-flatpak.sh substitutes @VERSION@ / @DATE@ and writes
+     com.rubixcoder.letsgo.metainfo.xml into the build staging dir. -->
+<component type="desktop-application">
+  <id>com.rubixcoder.letsgo</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>AGPL-3.0-or-later</project_license>
+  <name>LetsGo</name>
+  <summary>Local-first planner: boards, schedule, calendar, timers, notes, mindmap</summary>
+
+  <description>
+    <p>
+      LetsGo is a local-first productivity app. Every plugin works offline and
+      the vault is encrypted client-side. Sync is optional and entirely
+      self-hosted: point it at your own WebDAV server, or connect Google
+      Calendar. With neither configured the app runs fully offline.
+    </p>
+    <p>Included:</p>
+    <ul>
+      <li>Todo board — kanban, Eisenhower matrix, Gantt and list views</li>
+      <li>Day schedule and month calendar with Google Calendar sync</li>
+      <li>Focus timer — Pomodoro and estimate-aware countdown, honest
+          worked-vs-paused time, a per-day session log and status check-ins</li>
+      <li>Markdown notes with backlinks, a mindmap canvas and a book library
+          with camera ISBN scanning</li>
+      <li>Habits with a contribution heat grid; a dashboard tying it together</li>
+    </ul>
+    <p>
+      This build is the LetsGo webapp rendered by Chromium, so notifications,
+      alert sounds, reminders and the light/dark themes with a violet accent
+      behave exactly as they do in the browser.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">com.rubixcoder.letsgo.desktop</launchable>
+  <url type="homepage">https://github.com/rubix-coder/LetsGoApp</url>
+  <url type="bugtracker">https://github.com/rubix-coder/LetsGoApp/issues</url>
+  <developer id="com.rubixcoder">
+    <name>Jesal Patel</name>
+  </developer>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>The todo board — kanban, with Eisenhower, Gantt and list lenses</caption>
+      <image>https://raw.githubusercontent.com/rubix-coder/LetsGoApp/main/docs/screenshots/board.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>The day schedule — drag tasks onto the grid, blocked time, now-line</caption>
+      <image>https://raw.githubusercontent.com/rubix-coder/LetsGoApp/main/docs/screenshots/schedule.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Focus timer running against a task, with the day's session log</caption>
+      <image>https://raw.githubusercontent.com/rubix-coder/LetsGoApp/main/docs/screenshots/timer.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>The dashboard — the day at a glance, focus hours and work pattern</caption>
+      <image>https://raw.githubusercontent.com/rubix-coder/LetsGoApp/main/docs/screenshots/dashboard.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>The mindmap in dark theme, built from your tasks and notes</caption>
+      <image>https://raw.githubusercontent.com/rubix-coder/LetsGoApp/main/docs/screenshots/mindmap-dark.png</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1" />
+
+  <branding>
+    <color type="primary" scheme_preference="light">#7c5cf4</color>
+    <color type="primary" scheme_preference="dark">#9d85f8</color>
+  </branding>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+
+  <releases>
+    <release version="@VERSION@" date="@DATE@">
+      <description>
+        <p>LetsGo webapp @VERSION@ packaged as a Flatpak. See the project
+           CHANGELOG for the full per-release history.</p>
+      </description>
+    </release>
+  </releases>
+</component>

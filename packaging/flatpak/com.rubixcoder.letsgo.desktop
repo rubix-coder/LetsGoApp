@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=LetsGo
+GenericName=Planner
+Comment=Local-first planner — todo board, schedule, calendar, timers, notes, mindmap, book library
+Exec=letsgo %U
+Icon=com.rubixcoder.letsgo
+Terminal=false
+Categories=Office;ProjectManagement;
+Keywords=todo;tasks;planner;kanban;eisenhower;gantt;schedule;calendar;notes;mindmap;timer;pomodoro;habits;library;
+StartupNotify=true
+# Must match the window's app-id / WM_CLASS, or the dock shows a generic icon
+# for the running window. main.cjs announces FLATPAK_ID as the Wayland app-id
+# inside the sandbox, which is exactly this id.
+StartupWMClass=com.rubixcoder.letsgo

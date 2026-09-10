@@ -1,0 +1,21 @@
+{
+  "name": "letsgo-webapp-shell",
+  "private": true,
+  "version": "0.50.0",
+  "description": "LetsGo in a Chromium desktop window; /api proxied same-origin to your self-hosted LetsGo server (optional).",
+  "main": "main.cjs",
+  "author": "Jesal Patel (https://github.com/rubix-coder)",
+  "homepage": "https://github.com/rubix-coder/LetsGoApp",
+  "desktopName": "letsgo-webapp",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test-server.cjs && node test-flatpak-update.cjs",
+    "dist": "electron-builder --linux deb",
+    "dist:dir": "electron-builder --linux dir"
+  },
+  "devDependencies": {
+    "electron": "^37.2.5",
+    "electron-builder": "^26.0.12"
+  },
+  "license": "AGPL-3.0-or-later"
+}

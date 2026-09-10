@@ -1,0 +1,27 @@
+{
+  "name": "letsgo-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "LetsGo team backend: accounts, workspaces, projects, roles and per-project document sync. Node built-ins only (node:sqlite, node:crypto, http) \u2014 no native deps.",
+  "scripts": {
+    "start": "NODE_OPTIONS=--experimental-sqlite tsx src/main.ts",
+    "dev": "NODE_OPTIONS=--experimental-sqlite tsx watch src/main.ts",
+    "test": "NODE_OPTIONS=--experimental-sqlite vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "tsx": "^4.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  },
+  "license": "AGPL-3.0-or-later",
+  "homepage": "https://github.com/rubix-coder/LetsGoApp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rubix-coder/LetsGoApp.git"
+  }
+}

@@ -1,0 +1,12 @@
+#!/bin/bash
+# LetsGo (Flatpak) entry point.
+#
+# zypak-wrapper (from org.electronjs.Electron2.BaseApp) reroutes Chromium's
+# setuid-sandbox calls through the Flatpak/bubblewrap sandbox, so we do NOT
+# pass --no-sandbox — the renderer stays sandboxed.
+#
+# --ozone-platform-hint=auto lets Chromium pick Wayland when the session is
+# Wayland and fall back to X11 otherwise, matching the finish-args sockets.
+exec zypak-wrapper /app/letsgo/letsgo-webapp \
+  --ozone-platform-hint=auto \
+  "$@"
